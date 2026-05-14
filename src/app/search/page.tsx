@@ -2,7 +2,7 @@
 // src/app/search/page.tsx
 // Search results page
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, Loader2, AlertCircle } from "lucide-react";
@@ -14,7 +14,7 @@ interface SearchResult {
   brandOwner?: string;
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams  = useSearchParams();
   const router        = useRouter();
   const query         = searchParams.get("q") || "";
@@ -141,5 +141,18 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-32 gap-3 text-gray-400">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        <span>Loading search...</span>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }

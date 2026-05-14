@@ -2,7 +2,7 @@
 // src/app/food/[slug]/page.tsx
 // Individual food nutrition details page
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Heart, Share2, BookmarkPlus, Scale, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -53,7 +53,7 @@ function NutrientBar({ label, value, unit, max, color = "bg-brand-400" }: {
   );
 }
 
-export default function FoodPage() {
+function FoodContent() {
   const searchParams = useSearchParams();
   const fdcId        = searchParams.get("fdcId");
 
@@ -222,7 +222,7 @@ export default function FoodPage() {
         <div className="md:col-span-2">
           <div className="card">
             <h2 className="text-xl font-bold text-gray-900 mb-1">Nutrition Facts</h2>
-            <p className="text-xs text-gray-400 mb-4">Per {servingGrams}g serving · % Daily Value based on 2000 cal diet</p>
+            <p className="text-xs text-gray-400 mb-4">Per {servingGrams}g serving</p>
 
             <div className="space-y-0">
               <NutrientBar label="Fiber"        value={scale(nutrition.fiber)}        unit="g"  max={30}   color="bg-brand-400" />
@@ -260,5 +260,18 @@ export default function FoodPage() {
         Not intended as medical advice.
       </p>
     </div>
+  );
+}
+
+export default function FoodPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-32 gap-3 text-gray-400">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        Loading nutrition data...
+      </div>
+    }>
+      <FoodContent />
+    </Suspense>
   );
 }
