@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background-color: white;
+    color: rgb(17 24 39);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    background-color: rgb(29 158 117);
+    color: white;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 200ms;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+  }
+  .btn-primary:hover {
+    background-color: rgb(15 110 86);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  }
+
+  .btn-secondary {
+    background-color: rgb(225 245 238);
+    color: rgb(8 80 65);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 200ms;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-secondary:hover {
+    background-color: rgb(195 235 217);
+  }
+
+  .btn-outline {
+    border: 1px solid rgb(29 158 117);
+    color: rgb(29 158 117);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 200ms;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-outline:hover {
+    background-color: rgb(240 253 249);
+  }
+
+  .card {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    border: 1px solid rgb(243 244 246);
+    padding: 1.5rem;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    font-size: 1.125rem;
+    border-radius: 1rem;
+    border: 1px solid rgb(229 231 235);
+    transition: all 200ms;
+  }
+  .search-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(29,158,117,0.1);
+    border-color: rgb(93 202 165);
+  }
+
+  .section-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: rgb(17 24 39);
+  }
+  @media (min-width: 768px) {
+    .section-title {
+      font-size: 2.25rem;
+    }
+  }
+
+  .section-subtitle {
+    color: rgb(107 114 128);
+    margin-top: 0.5rem;
+    font-size: 1rem;
+  }
+  @media (min-width: 768px) {
+    .section-subtitle {
+      font-size: 1.125rem;
+    }
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .badge-green {
+    background-color: rgb(220 252 231);
+    color: rgb(22 101 52);
+  }
+
+  .badge-red {
+    background-color: rgb(254 226 226);
+    color: rgb(153 27 27);
+  }
+
+  .badge-yellow {
+    background-color: rgb(254 243 199);
+    color: rgb(146 64 14);
+  }
+}
