@@ -238,7 +238,7 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <Link href="/ai" className="inline-flex items-center gap-2 bg-white text-brand-600 font-semibold px-8 py-4 rounded-2xl hover:shadow-lg transition-all">
+              <Link href="/ai" className="inline-flex items-center gap-2 bg-white font-semibold px-8 py-4 rounded-2xl hover:shadow-lg transition-all" style={{color: '#0F6E56'}}>
                 <Brain className="w-5 h-5" />
                 Try AI Recommendations Free
               </Link>
