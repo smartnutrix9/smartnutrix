@@ -2,7 +2,7 @@
 // src/app/page.tsx
 // This is the HOMEPAGE - Google-style search for food nutrition
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -45,30 +45,96 @@ const aiPrompts = [
   "Iron rich foods for women",
 ];
 
-// Sample blog posts
-const recentPosts = [
-  {
-    title: "Top 10 High Protein Indian Foods",
-    slug: "high-protein-indian-foods",
-    excerpt: "Discover the best protein-rich foods in Indian cuisine for muscle building and weight management.",
-    category: "Protein",
-    readTime: 5,
-  },
-  {
-    title: "Complete Guide to South Indian Nutrition",
-    slug: "south-indian-nutrition-guide",
-    excerpt: "Everything you need to know about the nutritional value of popular South Indian dishes.",
-    category: "Indian Food",
-    readTime: 8,
-  },
-  {
-    title: "BMR vs BMI: What's the Difference?",
-    slug: "bmr-vs-bmi-difference",
-    excerpt: "Understanding the key differences between BMR and BMI and why both matter for your health.",
-    category: "Health",
-    readTime: 4,
-  },
-];
+function BlogSection() {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/blog/latest")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setPosts(data.posts);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || posts.length === 0) {
+    return (
+      <section className="py-10 px-4 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="section-title">Nutrition Blog</h2>
+              <p className="section-subtitle">Expert articles on food & health</p>
+            </div>
+            <Link href="/blog" className="text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all" style={{color: '#1D9E75'}}>
+              All articles <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="card p-6">
+                <div className="h-4 bg-gray-100 rounded w-20 mb-3" />
+                <div className="h-5 bg-gray-100 rounded w-full mb-2" />
+                <div className="h-5 bg-gray-100 rounded w-3/4 mb-4" />
+                <div className="h-3 bg-gray-100 rounded w-1/3" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-10 px-4 bg-gray-50">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="section-title">Nutrition Blog</h2>
+            <p className="section-subtitle">Expert articles on food & health</p>
+          </div>
+          <Link href="/blog" className="text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all" style={{color: '#1D9E75'}}>
+            All articles <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {posts.map((post: any) => (
+            <Link
+              key={post.id}
+              href={`/blog/${post.slug}`}
+              className="card hover:shadow-card transition-all group overflow-hidden p-0"
+            >
+              {post.cover_image ? (
+                <div className="h-40 overflow-hidden">
+                  <img src={post.cover_image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                </div>
+              ) : (
+                <div className="h-40 flex items-center justify-center" style={{background: 'linear-gradient(135deg, #E1F5EE, #C3EBD9)'}}>
+                  <span className="text-4xl opacity-50">📝</span>
+                </div>
+              )}
+              <div className="p-5">
+                {post.blog_categories && (
+                  <span className="text-xs font-medium px-2 py-1 rounded-full" style={{backgroundColor: post.blog_categories.color + '15', color: post.blog_categories.color}}>
+                    {post.blog_categories.name}
+                  </span>
+                )}
+                <h3 className="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors text-lg mt-2 mb-2 leading-snug">
+                  {post.title}
+                </h3>
+                <p className="text-sm text-gray-500 mb-3 line-clamp-2">{post.excerpt}</p>
+                <div className="text-xs text-gray-400">{post.read_time} min read</div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -247,37 +313,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BLOG SECTION */}
-      <section className="py-10 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="section-title">Nutrition Blog</h2>
-              <p className="section-subtitle">Expert articles on food & health</p>
-            </div>
-            <Link href="/blog" className="text-brand-600 text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
-              All articles <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {recentPosts.map((post) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.slug}`}
-                className="card hover:shadow-card transition-all group"
-              >
-                <div className="badge-green mb-3">{post.category}</div>
-                <h3 className="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors text-lg mb-2 leading-snug">
-                  {post.title}
-                </h3>
-                <p className="text-sm text-gray-500 mb-4 line-clamp-2">{post.excerpt}</p>
-                <div className="text-xs text-gray-400">{post.readTime} min read</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+{/* BLOG SECTION - Auto-loads from database */}
+      <BlogSection />
 
     </div>
   );
