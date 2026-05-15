@@ -142,7 +142,7 @@ export default function HomePage() {
       </section>
 
       {/* POPULAR FOODS SECTION */}
-      <section className="py-16 px-4 bg-white">
+      <section className="py-10 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -248,7 +248,7 @@ export default function HomePage() {
       </section>
 
       {/* BLOG SECTION */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="py-10 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>

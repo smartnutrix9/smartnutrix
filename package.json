@@ -2,12 +2,12 @@
   "name": "smartnutrix",
   "version": "0.1.0",
   "private": true,
-"scripts": {
-  "dev": "next dev --turbopack",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint"
-},
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
     "@prisma/client": "^7.8.0",
     "axios": "^1.16.1",
@@ -17,6 +17,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.6.0",
+    "resend": "^6.12.3",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
