@@ -42,8 +42,8 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900 mb-3">
-              <div className="w-7 h-7 bg-brand-500 rounded-lg flex items-center justify-center">
-                    <Leaf className="w-4 h-4 text-white" />
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{backgroundColor: '#1D9E75'}}>
+                <Leaf className="w-4 h-4" style={{color: 'white'}} />
               </div>
             <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
             </Link>

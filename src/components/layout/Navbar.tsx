@@ -34,17 +34,17 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
-      {/* Logo */}
-      <Link
-        href="/"
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="flex items-center gap-2 font-bold text-xl text-gray-900"
-        >
-        <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
-          <Leaf className="w-5 h-5 text-white" />
-        </div>
-        <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
-      </Link>
+{/* Logo */}
+<Link
+  href="/"
+  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+  className="flex items-center gap-2 font-bold text-xl text-gray-900"
+>
+  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: '#1D9E75'}}>
+    <Leaf className="w-5 h-5" style={{color: 'white'}} />
+  </div>
+  <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
+</Link>
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-1">
