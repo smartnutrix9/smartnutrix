@@ -212,7 +212,7 @@ export default function HomePage() {
       {/* AI RECOMMENDATIONS SECTION */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-r from-brand-600 to-brand-400 rounded-3xl p-8 md:p-12 text-white">
+          <div className="rounded-3xl p-8 md:p-12 text-white" style={{background: 'linear-gradient(to right, #0F6E56, #2DB887)'}}>
             <div className="max-w-3xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-full mb-6">
                 <Brain className="w-4 h-4" />
