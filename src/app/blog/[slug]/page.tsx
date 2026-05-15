@@ -129,14 +129,9 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
 
       {/* Article Content */}
       <article
-        className="prose prose-lg max-w-none mb-12"
-        style={{
-          lineHeight: '1.8',
-          color: '#374151',
-          fontSize: '16px',
-        }}
+        className="blog-content max-w-none mb-12"
         dangerouslySetInnerHTML={{ __html: post.content }}
-      />
+        />
 
       {/* Bottom navigation */}
       <div className="border-t border-gray-100 pt-8 mt-12">
