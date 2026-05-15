@@ -130,6 +130,13 @@
   }
 }
 
+.blog-content {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
 /* Blog article content styles */
 .blog-content h2 {
   font-size: 1.5rem;
