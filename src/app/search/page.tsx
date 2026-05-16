@@ -130,7 +130,10 @@ function SearchContent() {
         <div className="text-center py-16">
           <div className="text-5xl mb-4">🥗</div>
           <h3 className="text-lg font-semibold text-gray-700 mb-2">No foods found</h3>
-          <p className="text-gray-400 mb-6">Try a different search term or check the spelling</p>
+          <p className="text-gray-400 mb-4">Try a different search term or check the spelling</p>
+          <p className="text-sm text-amber-600 bg-amber-50 inline-block px-4 py-2 rounded-lg mb-6">
+            💡 If searches aren't working, the nutrition database may be temporarily busy. Please try again in a few minutes.
+          </p>
           <div className="flex flex-wrap gap-2 justify-center">
             {["Chicken", "Rice", "Dal", "Paneer", "Banana"].map((s) => (
               <Link key={s} href={`/search?q=${s}`} className="badge-green px-4 py-2 rounded-full text-sm">
