@@ -72,7 +72,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
+    <div className="mx-auto px-6 py-10" style={{ maxWidth: '780px' }}>
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-8">
         <Link href="/" className="hover:text-gray-600">Home</Link>
@@ -130,7 +130,6 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
       {/* Article Content */}
       <article
         className="blog-content mb-12"
-        style={{ maxWidth: '100%', width: '100%' }}
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
 

@@ -135,9 +135,6 @@
   width: 100%;
 }
 
-.blog-content * {
-  overflow-wrap: anywhere;
-}
 
 .blog-content h2 {
   font-size: 1.5rem;
