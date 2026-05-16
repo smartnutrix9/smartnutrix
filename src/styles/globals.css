@@ -133,8 +133,29 @@
 /* Blog article content styles */
 .blog-content {
   width: 100%;
+  overflow: hidden;
 }
 
+.blog-content p,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4,
+.blog-content li,
+.blog-content blockquote,
+.blog-content strong,
+.blog-content span {
+  max-width: 100%;
+  display: inline;
+}
+
+.blog-content p,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4,
+.blog-content li,
+.blog-content blockquote {
+  display: block;
+}
 
 .blog-content h2 {
   font-size: 1.5rem;
