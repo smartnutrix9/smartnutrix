@@ -1,13 +1,15 @@
+"use client";
 // src/components/layout/Footer.tsx
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Leaf } from "lucide-react";
 
 const footerLinks = {
   "Nutrition Tools": [
-    { label: "Food Search",       href: "/" },
-    { label: "Food Comparison",   href: "/compare" },
-    { label: "Calorie Counter",   href: "/calculator/calories" },
-    { label: "AI Recommendations",href: "/ai" },
+    { label: "Food Search",        href: "/" },
+    { label: "Food Comparison",    href: "/compare" },
+    { label: "Calorie Counter",    href: "/calculator/calories" },
+    { label: "AI Recommendations", href: "/ai" },
   ],
   "Calculators": [
     { label: "BMI Calculator",    href: "/calculator/bmi" },
@@ -15,23 +17,26 @@ const footerLinks = {
     { label: "Water Intake",      href: "/calculator/water" },
     { label: "Protein Intake",    href: "/calculator/protein" },
   ],
-  "Indian Foods": [
-    { label: "South Indian Foods",href: "/category/south-indian" },
-    { label: "North Indian Foods",href: "/category/north-indian" },
-    { label: "Dal & Lentils",     href: "/category/dal" },
-    { label: "Rice Dishes",       href: "/category/rice" },
-  ],
   "Company": [
     { label: "Blog",              href: "/blog" },
-    { label: "Shop",              href: "/shop" },
-    { label: "About Us",          href: "/about" },
     { label: "Contact Us",        href: "/contact" },
     { label: "Privacy Policy",    href: "/privacy" },
-    { label: "Terms of Service",  href: "/terms" },
+    { label: "Terms & Conditions", href: "/terms" },
   ],
 };
 
 export default function Footer() {
+  const [recentPosts, setRecentPosts] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/blog/latest")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setRecentPosts(data.posts);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <footer className="bg-gray-50 border-t border-gray-100 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -45,14 +50,14 @@ export default function Footer() {
               <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{backgroundColor: '#1D9E75'}}>
                 <Leaf className="w-4 h-4" style={{color: 'white'}} />
               </div>
-            <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
+              <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed">
               Your smart companion for food nutrition, calorie tracking, and healthy living.
             </p>
           </div>
 
-          {/* Links */}
+          {/* Static Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
               <h3 className="text-sm font-semibold text-gray-900 mb-3">{category}</h3>
@@ -61,7 +66,8 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-500 hover:text-brand-600 transition-colors"
+                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                      style={{ ["--tw-text-opacity" as any]: 1 }}
                     >
                       {link.label}
                     </Link>
@@ -70,6 +76,29 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+
+          {/* Recent Posts */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Recent Posts</h3>
+            <ul className="space-y-2">
+              {recentPosts.length > 0 ? (
+                recentPosts.map((post: any) => (
+                  <li key={post.slug}>
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors line-clamp-1"
+                    >
+                      {post.title}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li><Link href="/blog" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">View All Articles</Link></li>
+                </>
+              )}
+            </ul>
+          </div>
         </div>
 
         {/* Bottom */}
