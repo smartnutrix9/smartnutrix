@@ -132,24 +132,7 @@
 
 /* Blog article content styles */
 .blog-content {
-  max-width: 100% !important;
   margin: 0 auto;
-  overflow: hidden !important;
-}
-
-.blog-content p,
-.blog-content span,
-.blog-content strong,
-.blog-content em,
-.blog-content a,
-.blog-content h2,
-.blog-content h3,
-.blog-content h4,
-.blog-content li {
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  overflow-wrap: break-word !important;
-  max-width: 100% !important;
 }
 
 .blog-content h2 {

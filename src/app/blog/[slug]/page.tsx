@@ -72,7 +72,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10" style={{ overflow: 'hidden' }}>
+    <div style={{ maxWidth: '750px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-8">
         <Link href="/" className="hover:text-gray-600">Home</Link>
