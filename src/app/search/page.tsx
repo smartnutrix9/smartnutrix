@@ -84,7 +84,7 @@ function SearchContent() {
       {loading && (
         <div className="flex items-center justify-center py-20 gap-3 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>Searching nutrition database...</span>
+          <span>SmartNutrix is searching 900,000+ foods...</span>
         </div>
       )}
 
@@ -152,7 +152,7 @@ export default function SearchPage() {
     <Suspense fallback={
       <div className="flex items-center justify-center py-32 gap-3 text-gray-400">
         <Loader2 className="w-6 h-6 animate-spin" />
-        <span>Loading search...</span>
+        <span>Preparing SmartNutrix Search...</span>
       </div>
     }>
       <SearchContent />

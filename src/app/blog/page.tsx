@@ -44,7 +44,7 @@ export default function BlogPage() {
     return (
       <div className="flex items-center justify-center py-32 gap-3 text-gray-400">
         <Loader2 className="w-6 h-6 animate-spin" />
-        Loading articles...
+        Loading SmartNutrix articles...
       </div>
     );
   }

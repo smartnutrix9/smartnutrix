@@ -93,7 +93,7 @@ function FoodContent() {
     return (
       <div className="flex items-center justify-center py-32 gap-3 text-gray-400">
         <Loader2 className="w-6 h-6 animate-spin" />
-        Loading nutrition data...
+    SmartNutrix is fetching nutrition facts...
       </div>
     );
   }
@@ -268,7 +268,7 @@ export default function FoodPage() {
     <Suspense fallback={
       <div className="flex items-center justify-center py-32 gap-3 text-gray-400">
         <Loader2 className="w-6 h-6 animate-spin" />
-        Loading nutrition data...
+        Preparing SmartNutrix Nutrition Data...
       </div>
     }>
       <FoodContent />

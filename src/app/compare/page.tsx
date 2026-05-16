@@ -271,7 +271,7 @@ export default function ComparePage() {
       {loading && (
         <div className="flex items-center justify-center py-10 gap-3 text-gray-400">
           <Loader2 className="w-5 h-5 animate-spin" />
-          Loading nutrition data...
+          SmartNutrix is comparing nutrition facts...
         </div>
       )}
 
