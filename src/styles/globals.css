@@ -132,9 +132,14 @@
 
 .blog-content {
   max-width: 100%;
-  overflow-wrap: normal;
-  word-wrap: normal;
-  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.blog-content p,
+.blog-content li,
+.blog-content blockquote {
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 /* Blog article content styles */
