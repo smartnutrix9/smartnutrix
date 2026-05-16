@@ -30,14 +30,14 @@ async function fetchWithRetry(url: string, options: any, retries = 3): Promise<a
       const response = await axios({
         ...options,
         url,
-        timeout: 10000, // 10 second timeout
+        timeout: 15000, // 10 second timeout
       });
       return response;
     } catch (error: any) {
       console.error(`USDA API attempt ${attempt}/${retries} failed:`, error.message);
       if (attempt === retries) throw error;
       // Wait before retrying (500ms, 1000ms, 1500ms)
-      await new Promise(resolve => setTimeout(resolve, attempt * 500));
+      await new Promise(resolve => setTimeout(resolve, attempt * 1000));
     }
   }
 }
