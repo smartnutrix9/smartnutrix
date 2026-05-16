@@ -1,13 +1,12 @@
 // lib/usda.ts
-// This file handles all calls to the USDA FoodData Central API
-// It fetches real nutrition data for 900,000+ foods
+// USDA FoodData Central API with retry logic
 
 import axios from "axios";
 
 const USDA_BASE_URL = "https://api.nal.usda.gov/fdc/v1";
 const API_KEY = process.env.USDA_API_KEY;
 
-// Simple in-memory cache (resets on server restart)
+// Simple in-memory cache
 const cache = new Map<string, { data: unknown; expires: number }>();
 
 function getCached(key: string) {
@@ -22,6 +21,25 @@ function getCached(key: string) {
 
 function setCache(key: string, data: unknown, ttlSeconds = 3600) {
   cache.set(key, { data, expires: Date.now() + ttlSeconds * 1000 });
+}
+
+// Retry helper - tries up to 3 times
+async function fetchWithRetry(url: string, options: any, retries = 3): Promise<any> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await axios({
+        ...options,
+        url,
+        timeout: 10000, // 10 second timeout
+      });
+      return response;
+    } catch (error: any) {
+      console.error(`USDA API attempt ${attempt}/${retries} failed:`, error.message);
+      if (attempt === retries) throw error;
+      // Wait before retrying (500ms, 1000ms, 1500ms)
+      await new Promise(resolve => setTimeout(resolve, attempt * 500));
+    }
+  }
 }
 
 // ─── TYPES ───────────────────────────────────────────────
@@ -65,12 +83,15 @@ export async function searchFoods(
   if (cached) return cached as FoodSearchResult[];
 
   try {
-    const response = await axios.post(
+    const response = await fetchWithRetry(
       `${USDA_BASE_URL}/foods/search?api_key=${API_KEY}`,
       {
-        query,
-        pageSize,
-        dataType: ["Foundation", "SR Legacy", "Survey (FNDDS)"],
+        method: "POST",
+        data: {
+          query,
+          pageSize,
+          dataType: ["Foundation", "SR Legacy", "Survey (FNDDS)"],
+        },
       }
     );
 
@@ -84,6 +105,7 @@ export async function searchFoods(
       })
     );
 
+    // Cache for 1 hour
     setCache(cacheKey, results, 3600);
     return results;
   } catch (error) {
@@ -99,14 +121,16 @@ export async function getFoodNutrition(fdcId: number): Promise<NutritionData | n
   if (cached) return cached as NutritionData;
 
   try {
-    const response = await axios.get(
-      `${USDA_BASE_URL}/food/${fdcId}?api_key=${API_KEY}`
+    const response = await fetchWithRetry(
+      `${USDA_BASE_URL}/food/${fdcId}?api_key=${API_KEY}`,
+      {
+        method: "GET",
+      }
     );
 
     const food = response.data;
     const nutrients = food.foodNutrients || [];
 
-    // Helper to extract nutrient value by USDA nutrient ID
     function getNutrient(nutrientId: number): number {
       const n = nutrients.find(
         (n: any) =>
@@ -137,6 +161,7 @@ export async function getFoodNutrition(fdcId: number): Promise<NutritionData | n
       servingUnit:    food.servingSizeUnit || "g",
     };
 
+    // Cache for 24 hours (food nutrition doesn't change)
     setCache(cacheKey, data, 86400);
     return data;
   } catch (error) {
@@ -155,14 +180,12 @@ export function calculateHealthScore(nutrition: NutritionData): {
   let score = 5;
   const tips: string[] = [];
 
-  // Positive factors
   if (nutrition.fiber > 5)     { score += 1; }
   if (nutrition.protein > 10)  { score += 1; }
   if (nutrition.vitaminC > 20) { score += 0.5; }
   if (nutrition.calcium > 100) { score += 0.5; }
   if (nutrition.iron > 2)      { score += 0.5; }
 
-  // Negative factors
   if (nutrition.sugar > 20)      { score -= 1.5; tips.push("High in sugar"); }
   if (nutrition.sodium > 600)    { score -= 1.5; tips.push("High in sodium"); }
   if (nutrition.saturatedFat > 5){ score -= 1;   tips.push("High saturated fat"); }
