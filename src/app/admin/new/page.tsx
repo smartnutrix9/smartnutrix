@@ -1,14 +1,13 @@
 "use client";
 // src/app/admin/new/page.tsx
-// Create new blog post with rich text editor
+// Create new blog post with rich text editor + HTML toggle
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Eye, Loader2, Image as ImageIcon, Plus, X } from "lucide-react";
+import { ArrowLeft, Save, Eye, Loader2, Image as ImageIcon, Plus, X, Code, Type } from "lucide-react";
 import dynamic from "next/dynamic";
 
-// Load rich text editor dynamically (only in browser)
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
 
@@ -19,7 +18,6 @@ interface Category {
   color: string;
 }
 
-// Rich text editor toolbar options
 const quillModules = {
   toolbar: [
     [{ header: [2, 3, 4, false] }],
@@ -48,6 +46,7 @@ export default function NewPostPage() {
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
+  const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
   const router = useRouter();
 
   useEffect(() => {
@@ -75,7 +74,6 @@ export default function NewPostPage() {
   async function addCategory() {
     if (!newCategoryName.trim()) return;
     setAddingCategory(true);
-
     try {
       const res = await fetch("/api/admin/categories", {
         method: "POST",
@@ -112,7 +110,6 @@ export default function NewPostPage() {
     setSaving(true);
     setError("");
 
-    // Strip HTML tags for word count
     const plainText = content.replace(/<[^>]*>/g, "");
 
     try {
@@ -148,13 +145,11 @@ export default function NewPostPage() {
     }
   }
 
-  // Generate slug preview
   const slugPreview = title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-  // Word count from content
   const plainText = content.replace(/<[^>]*>/g, "");
   const wordCount = plainText.split(/\s+/).filter(Boolean).length;
   const readTime = Math.max(1, Math.ceil(wordCount / 200));
@@ -228,23 +223,64 @@ export default function NewPostPage() {
               />
             </div>
 
-            {/* Rich Text Editor */}
+            {/* Content Editor with Toggle */}
             <div className="card">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Content
-              </label>
-              <div className="bg-white rounded-lg" style={{ minHeight: "400px" }}>
-                <ReactQuill
-                  theme="snow"
-                  value={content}
-                  onChange={setContent}
-                  modules={quillModules}
-                  placeholder="Write your article here..."
-                  style={{ height: "350px", marginBottom: "42px" }}
-                />
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">Content</label>
+                <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+                  <button
+                    onClick={() => setEditorMode("visual")}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      editorMode === "visual" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                    }`}
+                  >
+                    <Type className="w-3 h-3" /> Visual
+                  </button>
+                  <button
+                    onClick={() => setEditorMode("html")}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      editorMode === "html" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                    }`}
+                  >
+                    <Code className="w-3 h-3" /> HTML
+                  </button>
+                </div>
               </div>
-              <div className="text-xs text-gray-400 mt-2">
-                {wordCount} words · ~{readTime} min read
+
+              {editorMode === "visual" ? (
+                <div className="bg-white rounded-lg" style={{ minHeight: "400px" }}>
+                  <ReactQuill
+                    theme="snow"
+                    value={content}
+                    onChange={setContent}
+                    modules={quillModules}
+                    placeholder="Write your article here..."
+                    style={{ height: "350px", marginBottom: "42px" }}
+                  />
+                </div>
+              ) : (
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Paste HTML content here...
+
+Example:
+<h2>Section Title</h2>
+<p>Your paragraph text here.</p>
+<h3>Sub Section</h3>
+<p><strong>Bold text</strong> and normal text.</p>
+<ul>
+  <li>List item 1</li>
+  <li>List item 2</li>
+</ul>"
+                  className="w-full outline-none text-gray-700 placeholder-gray-400 resize-none text-sm font-mono leading-relaxed border border-gray-200 rounded-lg p-4"
+                  style={{ minHeight: "400px", backgroundColor: '#1f2937', color: '#10b981' }}
+                />
+              )}
+
+              <div className="text-xs text-gray-400 mt-2 flex items-center justify-between">
+                <span>{wordCount} words · ~{readTime} min read</span>
+                <span>{editorMode === "visual" ? "Visual Editor" : "HTML Editor"} — Switch anytime</span>
               </div>
             </div>
           </div>
@@ -265,7 +301,6 @@ export default function NewPostPage() {
                 ))}
               </select>
 
-              {/* Add new category */}
               {showNewCategory ? (
                 <div className="mt-3 flex gap-2">
                   <input
@@ -276,26 +311,15 @@ export default function NewPostPage() {
                     className="search-input text-sm py-2 flex-1"
                     autoFocus
                   />
-                  <button
-                    onClick={addCategory}
-                    disabled={addingCategory}
-                    className="btn-primary text-xs py-2 px-3"
-                  >
+                  <button onClick={addCategory} disabled={addingCategory} className="btn-primary text-xs py-2 px-3">
                     {addingCategory ? <Loader2 className="w-3 h-3 animate-spin" /> : "Add"}
                   </button>
-                  <button
-                    onClick={() => { setShowNewCategory(false); setNewCategoryName(""); }}
-                    className="p-2 text-gray-400 hover:text-gray-600"
-                  >
+                  <button onClick={() => { setShowNewCategory(false); setNewCategoryName(""); }} className="p-2 text-gray-400 hover:text-gray-600">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowNewCategory(true)}
-                  className="mt-2 flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700"
-                  style={{color: '#1D9E75'}}
-                >
+                <button onClick={() => setShowNewCategory(true)} className="mt-2 flex items-center gap-1 text-xs hover:opacity-80" style={{color: '#1D9E75'}}>
                   <Plus className="w-3 h-3" /> Add new category
                 </button>
               )}
@@ -319,9 +343,7 @@ export default function NewPostPage() {
                   <img src={coverImage} alt="Cover preview" className="w-full h-32 object-cover" />
                 </div>
               )}
-              <p className="text-xs text-gray-400 mt-2">
-                Paste a Cloudinary or any image URL
-              </p>
+              <p className="text-xs text-gray-400 mt-2">Paste a Cloudinary or any image URL</p>
             </div>
 
             {/* SEO */}
@@ -355,13 +377,12 @@ export default function NewPostPage() {
 
             {/* Quick Tips */}
             <div className="card bg-blue-50">
-              <h3 className="text-sm font-semibold text-blue-900 mb-2">Writing Tips</h3>
+              <h3 className="text-sm font-semibold text-blue-900 mb-2">Editor Tips</h3>
               <ul className="text-xs text-blue-700 space-y-1">
-                <li>• Use H2 for main sections, H3 for subsections</li>
-                <li>• Keep paragraphs short (2-3 sentences)</li>
-                <li>• Add images to break up text</li>
-                <li>• Include an excerpt for better SEO</li>
-                <li>• Meta description under 160 characters</li>
+                <li>• <strong>Visual mode:</strong> Use toolbar for formatting</li>
+                <li>• <strong>HTML mode:</strong> Paste HTML content directly</li>
+                <li>• Switch between modes anytime</li>
+                <li>• Content is preserved when switching</li>
               </ul>
             </div>
           </div>

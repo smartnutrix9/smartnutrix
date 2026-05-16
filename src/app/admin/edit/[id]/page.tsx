@@ -1,11 +1,11 @@
 "use client";
 // src/app/admin/edit/[id]/page.tsx
-// Edit existing blog post with rich text editor
+// Edit blog post with rich text editor + HTML toggle
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Eye, Loader2, Image as ImageIcon, Trash2, Plus, X } from "lucide-react";
+import { ArrowLeft, Save, Eye, Loader2, Image as ImageIcon, Trash2, Plus, X, Code, Type } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
@@ -49,6 +49,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
+  const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
   const router = useRouter();
 
   useEffect(() => {
@@ -265,21 +266,54 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
               />
             </div>
 
-            {/* Rich Text Editor */}
+            {/* Content Editor with Toggle */}
             <div className="card">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
-              <div className="bg-white rounded-lg" style={{ minHeight: "400px" }}>
-                <ReactQuill
-                  theme="snow"
-                  value={content}
-                  onChange={setContent}
-                  modules={quillModules}
-                  placeholder="Write your article here..."
-                  style={{ height: "350px", marginBottom: "42px" }}
-                />
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">Content</label>
+                <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+                  <button
+                    onClick={() => setEditorMode("visual")}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      editorMode === "visual" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                    }`}
+                  >
+                    <Type className="w-3 h-3" /> Visual
+                  </button>
+                  <button
+                    onClick={() => setEditorMode("html")}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      editorMode === "html" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                    }`}
+                  >
+                    <Code className="w-3 h-3" /> HTML
+                  </button>
+                </div>
               </div>
-              <div className="text-xs text-gray-400 mt-2">
-                {wordCount} words · ~{readTime} min read
+
+              {editorMode === "visual" ? (
+                <div className="bg-white rounded-lg" style={{ minHeight: "400px" }}>
+                  <ReactQuill
+                    theme="snow"
+                    value={content}
+                    onChange={setContent}
+                    modules={quillModules}
+                    placeholder="Write your article here..."
+                    style={{ height: "350px", marginBottom: "42px" }}
+                  />
+                </div>
+              ) : (
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Paste HTML content here..."
+                  className="w-full outline-none resize-none text-sm font-mono leading-relaxed border border-gray-200 rounded-lg p-4"
+                  style={{ minHeight: "400px", backgroundColor: '#1f2937', color: '#10b981' }}
+                />
+              )}
+
+              <div className="text-xs text-gray-400 mt-2 flex items-center justify-between">
+                <span>{wordCount} words · ~{readTime} min read</span>
+                <span>{editorMode === "visual" ? "Visual Editor" : "HTML Editor"} — Switch anytime</span>
               </div>
             </div>
           </div>
