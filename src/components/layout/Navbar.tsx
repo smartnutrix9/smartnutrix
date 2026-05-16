@@ -34,17 +34,17 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
-{/* Logo */}
-<Link
-  href="/"
-  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-  className="flex items-center gap-2 font-bold text-xl text-gray-900"
->
-  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: '#1D9E75'}}>
-    <Leaf className="w-5 h-5" style={{color: 'white'}} />
-  </div>
-  <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
-</Link>
+          {/* Logo */}
+          <Link
+            href="/"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-2 font-bold text-xl text-gray-900"
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: '#1D9E75'}}>
+              <Leaf className="w-5 h-5" style={{color: 'white'}} />
+            </div>
+            <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
+          </Link>
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-1">
@@ -61,16 +61,18 @@ export default function Navbar() {
                     <span className="text-xs">▾</span>
                   </button>
                   {dropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-52 bg-white rounded-xl shadow-card border border-gray-100 py-2 z-50">
-                      {link.dropdown.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className="block px-4 py-2 text-sm text-gray-600 hover:text-brand-600 hover:bg-brand-50 transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
+                    <div className="absolute top-full left-0 pt-2 w-52 z-50">
+                      <div className="bg-white rounded-xl shadow-card border border-gray-100 py-2">
+                        {link.dropdown.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className="block px-4 py-2 text-sm text-gray-600 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -135,7 +137,7 @@ export default function Navbar() {
             </div>
           ))}
           <div className="pt-3 border-t border-gray-100 flex gap-3">
-            <Link href="/login"  className="flex-1 btn-outline text-sm py-2 text-center justify-center">Sign In</Link>
+            <Link href="/login" className="flex-1 btn-outline text-sm py-2 text-center justify-center">Sign In</Link>
             <Link href="/signup" className="flex-1 btn-primary text-sm py-2 text-center justify-center">Get Started</Link>
           </div>
         </div>
