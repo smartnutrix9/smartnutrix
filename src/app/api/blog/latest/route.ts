@@ -11,7 +11,7 @@ export async function GET() {
       .select("id, title, slug, excerpt, cover_image, read_time, published_at, blog_categories(name, slug, color)")
       .eq("published", true)
       .order("published_at", { ascending: false })
-      .limit(5);
+      .limit(6);
 
     if (error) throw error;
 
