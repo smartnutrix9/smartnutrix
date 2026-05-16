@@ -1,16 +1,17 @@
 // src/app/api/admin/posts/route.ts
-// API for managing blog posts (create, read, update, delete)
-
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-// GET - Fetch all posts (admin view - includes drafts)
+// Helper: clean non-breaking spaces from Quill editor
+function cleanNbsp(text: string): string {
+  return text ? text.replace(/&nbsp;/g, ' ') : text;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!supabaseAdmin) return NextResponse.json({ error: "Database not configured" }, { status: 500 });
 
     const { data, error } = await supabaseAdmin
       .from("blog_posts")
@@ -18,7 +19,6 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-
     return NextResponse.json({ success: true, posts: data });
   } catch (error: any) {
     console.error("Fetch posts error:", error);
@@ -26,51 +26,42 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create a new post
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!supabaseAdmin) return NextResponse.json({ error: "Database not configured" }, { status: 500 });
 
     const body = await request.json();
     const { title, content, excerpt, category_id, cover_image, published, meta_title, meta_description } = body;
 
-    if (!title || !content) {
-      return NextResponse.json({ error: "Title and content are required" }, { status: 400 });
-    }
+    if (!title || !content) return NextResponse.json({ error: "Title and content are required" }, { status: 400 });
 
-    // Generate slug from title
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+    // Clean non-breaking spaces
+    const cleanContent = cleanNbsp(content);
+    const cleanExcerpt = cleanNbsp(excerpt || "");
 
-    // Calculate read time (average 200 words per minute)
-    const wordCount = content.split(/\s+/).length;
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const wordCount = cleanContent.replace(/<[^>]*>/g, "").split(/\s+/).length;
     const readTime = Math.max(1, Math.ceil(wordCount / 200));
 
     const { data, error } = await supabaseAdmin
       .from("blog_posts")
       .insert({
-        title,
-        slug,
-        content,
-        excerpt: excerpt || content.substring(0, 160).replace(/<[^>]*>/g, ""),
+        title, slug,
+        content: cleanContent,
+        excerpt: cleanExcerpt || cleanContent.substring(0, 160).replace(/<[^>]*>/g, ""),
         category_id: category_id || null,
         cover_image: cover_image || null,
         published: published || false,
         read_time: readTime,
         meta_title: meta_title || title,
-        meta_description: meta_description || excerpt || content.substring(0, 160).replace(/<[^>]*>/g, ""),
+        meta_description: meta_description || cleanExcerpt || cleanContent.substring(0, 160).replace(/<[^>]*>/g, ""),
         published_at: published ? new Date().toISOString() : null,
       })
-      .select()
-      .single();
+      .select().single();
 
     if (error) throw error;
-
     return NextResponse.json({ success: true, post: data });
   } catch (error: any) {
     console.error("Create post error:", error);
@@ -78,39 +69,29 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update a post
 export async function PUT(request: NextRequest) {
   try {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!supabaseAdmin) return NextResponse.json({ error: "Database not configured" }, { status: 500 });
 
     const body = await request.json();
     const { id, title, content, excerpt, category_id, cover_image, published, meta_title, meta_description } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
 
-    // Recalculate read time
-    const wordCount = content ? content.split(/\s+/).length : 0;
-    const readTime = Math.max(1, Math.ceil(wordCount / 200));
-
-    // Build update object
-    const updateData: any = {
-      updated_at: new Date().toISOString(),
-    };
+    const updateData: any = { updated_at: new Date().toISOString() };
 
     if (title !== undefined) {
       updateData.title = title;
       updateData.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     }
     if (content !== undefined) {
-      updateData.content = content;
-      updateData.read_time = readTime;
+      const cleanContent = cleanNbsp(content);
+      updateData.content = cleanContent;
+      updateData.read_time = Math.max(1, Math.ceil(cleanContent.replace(/<[^>]*>/g, "").split(/\s+/).length / 200));
     }
-    if (excerpt !== undefined) updateData.excerpt = excerpt;
+    if (excerpt !== undefined) updateData.excerpt = cleanNbsp(excerpt || "");
     if (category_id !== undefined) updateData.category_id = category_id || null;
     if (cover_image !== undefined) updateData.cover_image = cover_image;
     if (published !== undefined) {
@@ -121,14 +102,9 @@ export async function PUT(request: NextRequest) {
     if (meta_description !== undefined) updateData.meta_description = meta_description;
 
     const { data, error } = await supabaseAdmin
-      .from("blog_posts")
-      .update(updateData)
-      .eq("id", id)
-      .select()
-      .single();
+      .from("blog_posts").update(updateData).eq("id", id).select().single();
 
     if (error) throw error;
-
     return NextResponse.json({ success: true, post: data });
   } catch (error: any) {
     console.error("Update post error:", error);
@@ -136,28 +112,18 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete a post
 export async function DELETE(request: NextRequest) {
   try {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!supabaseAdmin) return NextResponse.json({ error: "Database not configured" }, { status: 500 });
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
 
-    if (!id) {
-      return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
-    }
-
-    const { error } = await supabaseAdmin
-      .from("blog_posts")
-      .delete()
-      .eq("id", id);
-
+    const { error } = await supabaseAdmin.from("blog_posts").delete().eq("id", id);
     if (error) throw error;
-
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Delete post error:", error);

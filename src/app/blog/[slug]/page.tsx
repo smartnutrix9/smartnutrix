@@ -128,12 +128,10 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
       )}
 
       {/* Article Content */}
-<div className="mb-12" style={{ maxWidth: '700px', overflow: 'hidden' }}>
-  <article
-    className="blog-content"
-    dangerouslySetInnerHTML={{ __html: post.content }}
-  />
-</div>
+<article
+  className="blog-content mb-12"
+  dangerouslySetInnerHTML={{ __html: post.content }}
+/>
 
       {/* Bottom navigation */}
       <div className="border-t border-gray-100 pt-8 mt-12">
