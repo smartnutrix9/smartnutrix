@@ -1,6 +1,6 @@
 "use client";
 // src/app/page.tsx
-// This is the HOMEPAGE - Google-style search for food nutrition
+// Homepage of SmartNutrix
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -32,10 +32,10 @@ const calculators = [
   { name: "BMR Calculator",      desc: "Find your base metabolic rate",    href: "/calculator/bmr",      icon: Activity, color: "bg-purple-50 text-purple-600" },
   { name: "Calorie Calculator",  desc: "Daily calorie needs",              href: "/calculator/calories", icon: Zap,      color: "bg-orange-50 text-orange-600" },
   { name: "Water Intake",        desc: "Daily water requirement",          href: "/calculator/water",    icon: Droplets, color: "bg-cyan-50 text-cyan-600" },
-  { name: "Protein Intake",      desc: "Daily protein requirement",        href: "/calculator/protein",  icon: TrendingUp,color: "bg-brand-50 text-brand-600" },
+  { name: "Protein Intake",      desc: "Daily protein requirement",        href: "/calculator/protein",  icon: TrendingUp, color: "bg-brand-50 text-brand-600" },
 ];
 
-// Sample AI prompts
+// AI prompts
 const aiPrompts = [
   "High protein vegetarian foods",
   "Weight loss foods for Indians",
@@ -45,6 +45,7 @@ const aiPrompts = [
   "Iron rich foods for women",
 ];
 
+// BlogSection component - fetches latest posts from database
 function BlogSection() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,19 +139,62 @@ function BlogSection() {
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestTimer, setSuggestTimer] = useState<any>(null);
   const router = useRouter();
+
+  // Auto-suggest function with debounce
+  function handleAutoSuggest(query: string) {
+    if (suggestTimer) clearTimeout(suggestTimer);
+
+    if (query.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}&limit=6`);
+        const data = await res.json();
+        if (data.success && data.results.length > 0) {
+          setSuggestions(data.results);
+          setShowSuggestions(true);
+        } else {
+          setSuggestions([]);
+          setShowSuggestions(false);
+        }
+      } catch {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300);
+
+    setSuggestTimer(timer);
+  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
+    setShowSuggestions(false);
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   }
 
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside() {
+      setShowSuggestions(false);
+    }
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
   return (
     <div className="min-h-screen">
 
-      {/* HERO SECTION - Main search area */}
+      {/* HERO SECTION */}
       <section className="bg-gradient-to-b from-brand-50 to-white pt-16 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
 
@@ -169,17 +213,21 @@ export default function HomePage() {
             Search nutrition facts, track calories, compare foods, and get AI-powered diet recommendations — all in one place.
           </p>
 
-          {/* Search bar */}
+          {/* Search bar with auto-suggest */}
           <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
             <div className="flex gap-3 p-2 bg-white rounded-2xl shadow-card border border-gray-200">
-              <div className="flex-1 flex items-center gap-3 px-3">
+              <div className="flex-1 flex items-center gap-3 px-3 relative">
                 <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 <input
                   type="text"
                   placeholder="Search any food... (e.g. paneer, idli, avocado)"
                   className="flex-1 text-base outline-none text-gray-700 placeholder-gray-400"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    handleAutoSuggest(e.target.value);
+                  }}
+                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                   autoFocus
                 />
               </div>
@@ -190,6 +238,27 @@ export default function HomePage() {
                 Search
               </button>
             </div>
+
+            {/* Auto-suggest dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 z-50 max-h-64 overflow-y-auto">
+                {suggestions.map((item, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery(item.description);
+                      setShowSuggestions(false);
+                      router.push(`/search?q=${encodeURIComponent(item.description)}`);
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors text-gray-700 border-b border-gray-50 last:border-0 flex items-center gap-3"
+                  >
+                    <Search className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                    <span>{item.description}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </form>
 
           {/* Quick search tags */}
@@ -208,7 +277,7 @@ export default function HomePage() {
       </section>
 
       {/* POPULAR FOODS SECTION */}
-      <section className="py-10 px-4 bg-white">
+      <section className="py-16 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -218,16 +287,13 @@ export default function HomePage() {
               </h2>
               <p className="section-subtitle">Most searched foods today</p>
             </div>
-            <Link href="/foods" className="text-brand-600 text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
-              View all <ChevronRight className="w-4 h-4" />
-            </Link>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {popularFoods.map((food) => (
               <Link
                 key={food.slug}
-                href={`/food/${food.slug}`}
+                href={`/search?q=${encodeURIComponent(food.name)}`}
                 className="card hover:shadow-card hover:border-brand-200 transition-all text-center p-4 cursor-pointer group"
               >
                 <div className="text-3xl mb-2">{food.emoji}</div>
@@ -265,7 +331,7 @@ export default function HomePage() {
                     {calc.name}
                   </h3>
                   <p className="text-sm text-gray-500">{calc.desc}</p>
-                  <div className="mt-4 text-brand-600 text-sm font-medium flex items-center gap-1">
+                  <div className="mt-4 text-sm font-medium flex items-center gap-1" style={{color: '#1D9E75'}}>
                     Calculate <ChevronRight className="w-4 h-4" />
                   </div>
                 </Link>
@@ -287,11 +353,10 @@ export default function HomePage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Get personalized food recommendations
               </h2>
-              <p className="text-brand-100 text-lg mb-8">
+              <p className="text-lg mb-8" style={{color: '#C3EBD9'}}>
                 Tell our AI your health goals and get customized food suggestions instantly.
               </p>
 
-              {/* AI prompt suggestions */}
               <div className="flex flex-wrap gap-2 justify-center mb-8">
                 {aiPrompts.map((prompt) => (
                   <Link
@@ -313,7 +378,72 @@ export default function HomePage() {
         </div>
       </section>
 
-{/* BLOG SECTION - Auto-loads from database */}
+      {/* FOOD COMPARISON SECTION */}
+      <section className="py-16 px-4 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="section-title mb-4">Compare Foods Side by Side</h2>
+              <p className="text-gray-500 text-lg mb-6">
+                See exactly how two foods stack up nutritionally. Compare calories, protein, carbs, vitamins and more.
+              </p>
+              <div className="space-y-2 mb-6">
+                {["Apple vs Banana", "Rice vs Quinoa", "Paneer vs Tofu", "Idli vs Dosa"].map((pair) => (
+                  <Link
+                    key={pair}
+                    href={`/compare?foods=${encodeURIComponent(pair)}`}
+                    className="flex items-center gap-2 font-medium" style={{color: '#1D9E75'}}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                    {pair}
+                  </Link>
+                ))}
+              </div>
+              <Link href="/compare" className="btn-primary">
+                Compare Any Two Foods
+              </Link>
+            </div>
+            <div className="card p-6">
+              <div className="text-center text-gray-400 text-sm mb-4">Sample comparison</div>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl mb-1">🍎</div>
+                  <div className="font-semibold text-gray-700">Apple</div>
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="text-gray-300 text-lg font-bold">vs</span>
+                </div>
+                <div>
+                  <div className="text-2xl mb-1">🍌</div>
+                  <div className="font-semibold text-gray-700">Banana</div>
+                </div>
+              </div>
+              <div className="mt-4 space-y-3">
+                {[
+                  { label: "Calories", a: 52,  b: 89  },
+                  { label: "Protein",  a: 0.3, b: 1.1 },
+                  { label: "Carbs",    a: 14,  b: 23  },
+                  { label: "Fiber",    a: 2.4, b: 2.6 },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 w-16 text-right">{row.a}g</span>
+                    <div className="flex-1">
+                      <div className="text-xs text-center text-gray-500 mb-1">{row.label}</div>
+                      <div className="flex gap-1">
+                        <div className="h-2 bg-red-300 rounded-l-full flex-1" style={{ maxWidth: `${(row.a / (row.a + row.b)) * 100}%` }} />
+                        <div className="h-2 bg-yellow-300 rounded-r-full flex-1" />
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-500 w-16">{row.b}g</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* BLOG SECTION - Auto-loads from database */}
       <BlogSection />
 
     </div>

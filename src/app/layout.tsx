@@ -1,10 +1,9 @@
 // src/app/layout.tsx
-// This is the MAIN LAYOUT - wraps every page on your site
-
 import type { Metadata } from "next";
 import "../styles/globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import ScrollToTop from "@/components/layout/ScrollToTop";
 
 export const metadata: Metadata = {
   title: {
@@ -57,6 +56,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <ScrollToTop />
       </body>
     </html>
   );
