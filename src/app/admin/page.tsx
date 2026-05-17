@@ -176,13 +176,16 @@ export default function AdminDashboard() {
             Blog Posts
           </h1>
           <div className="flex items-center gap-3">
-              <Link href="/admin/categories" className="btn-outline text-sm py-2 px-4">
-                Manage Categories
-              </Link>
-              <Link href="/admin/new" className="btn-primary">
-              <Plus className="w-4 h-4" /> New Post
-              </Link>
-          </div>
+  <Link href="/admin/shop" className="btn-outline text-sm py-2 px-4">
+    🛒 Shop
+  </Link>
+  <Link href="/admin/categories" className="btn-outline text-sm py-2 px-4">
+    Manage Categories
+  </Link>
+  <Link href="/admin/new" className="btn-primary">
+    <Plus className="w-4 h-4" /> New Post
+  </Link>
+</div>
         </div>
 
         {/* Posts list */}
