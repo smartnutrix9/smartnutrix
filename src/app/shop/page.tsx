@@ -170,7 +170,10 @@ export default function ShopPage() {
       </div>
 
       {/* Products Grid */}
-      {products.length === 0 ? (
+      {products.filter((product) => {
+        if (country === "usa") return product.amazon_url_usa || product.price_usd;
+        return product.amazon_url_india || product.price_inr;
+      }).length === 0 ? (
         <div className="text-center py-16">
           <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-700 mb-2">No products in this category</h3>
@@ -178,7 +181,10 @@ export default function ShopPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {products.map((product) => {
+          {products.filter((product) => {
+            if (country === "usa") return product.amazon_url_usa || product.price_usd;
+            return product.amazon_url_india || product.price_inr;
+          }).map((product) => {
             const price = getPrice(product);
             const link = getAmazonLink(product);
 
