@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 
 const BASE_URL = "https://smartnutrix.com";
 
-export const revalidate = 3600; // Regenerate sitemap every 1 hour
+export const revalidate = 0; // Regenerate sitemap every 1 hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
