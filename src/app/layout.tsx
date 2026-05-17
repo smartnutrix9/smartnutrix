@@ -6,6 +6,9 @@ import Footer from "@/components/layout/Footer";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 
 export const metadata: Metadata = {
+  verification: {
+    google: "aY1MEUR5Va_dgEXuMxufK4LoZOT9YGde5_H3Xn0NYvE",
+  },
   title: {
     default: "SmartNutrix – Food Nutrition Facts & Calorie Calculator",
     template: "%s | SmartNutrix",
