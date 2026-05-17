@@ -30,7 +30,7 @@ async function fetchWithRetry(url: string, options: any, retries = 3): Promise<a
       const response = await axios({
         ...options,
         url,
-        timeout: 18000, // 18 second timeout
+        timeout: 25000, // 25 second timeout
       });
       return response;
     } catch (error: any) {
