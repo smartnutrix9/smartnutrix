@@ -65,6 +65,7 @@ export default function AdminShopPage() {
   const [formRating, setFormRating] = useState("4.0");
   const [formReviews, setFormReviews] = useState("0");
   const [formFeatured, setFormFeatured] = useState(false);
+  const [formCountry, setFormCountry] = useState<"usa" | "india">("usa");
 
   const categories = [
     "Protein Supplements", "Vitamins & Minerals", "Kitchen Tools",
@@ -118,6 +119,7 @@ export default function AdminShopPage() {
     setFormPriceUsd(""); setFormPriceInr("");
     setFormAmazonUsa(""); setFormAmazonIndia("");
     setFormRating("4.0"); setFormReviews("0"); setFormFeatured(false);
+    setFormCountry("usa");
   }
 
   function openEditForm(product: Product) {
@@ -358,6 +360,22 @@ export default function AdminShopPage() {
                   </button>
                 </div>
 
+                {/* Country Toggle for Form */}
+                <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit mb-4">
+                  <button
+                    onClick={() => setFormCountry("usa")}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${formCountry === "usa" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
+                  >
+                    🇺🇸 USA
+                  </button>
+                  <button
+                    onClick={() => setFormCountry("india")}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${formCountry === "india" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
+                  >
+                    🇮🇳 India
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Product Title *</label>
@@ -397,25 +415,30 @@ export default function AdminShopPage() {
                     </div>
                   )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price USD ($)</label>
-                    <input type="number" step="0.01" value={formPriceUsd} onChange={(e) => setFormPriceUsd(e.target.value)} placeholder="29.99" className="search-input text-sm py-2" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price INR (₹)</label>
-                    <input type="number" step="0.01" value={formPriceInr} onChange={(e) => setFormPriceInr(e.target.value)} placeholder="2499" className="search-input text-sm py-2" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Amazon USA Link</label>
-                    <input type="text" value={formAmazonUsa} onChange={(e) => setFormAmazonUsa(e.target.value)} placeholder="https://amazon.com/dp/..." className="search-input text-sm py-2" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Amazon India Link</label>
-                    <input type="text" value={formAmazonIndia} onChange={(e) => setFormAmazonIndia(e.target.value)} placeholder="https://amazon.in/dp/..." className="search-input text-sm py-2" />
-                  </div>
+                  {/* Country-specific fields */}
+                  {formCountry === "usa" ? (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">🇺🇸 Price USD ($)</label>
+                        <input type="number" step="0.01" value={formPriceUsd} onChange={(e) => setFormPriceUsd(e.target.value)} placeholder="29.99" className="search-input text-sm py-2" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">🇺🇸 Amazon USA Link</label>
+                        <input type="text" value={formAmazonUsa} onChange={(e) => setFormAmazonUsa(e.target.value)} placeholder="https://amazon.com/dp/..." className="search-input text-sm py-2" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">🇮🇳 Price INR (₹)</label>
+                        <input type="number" step="0.01" value={formPriceInr} onChange={(e) => setFormPriceInr(e.target.value)} placeholder="2499" className="search-input text-sm py-2" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">🇮🇳 Amazon India Link</label>
+                        <input type="text" value={formAmazonIndia} onChange={(e) => setFormAmazonIndia(e.target.value)} placeholder="https://amazon.in/dp/..." className="search-input text-sm py-2" />
+                      </div>
+                    </>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Rating (0-5)</label>
@@ -430,9 +453,14 @@ export default function AdminShopPage() {
                   <div className="flex items-center gap-2">
                     <input type="checkbox" checked={formFeatured} onChange={(e) => setFormFeatured(e.target.checked)} id="featured" className="w-4 h-4" />
                     <label htmlFor="featured" className="text-sm text-gray-700">
-                      <Star className="w-4 h-4 inline mr-1 text-amber-500" /> Featured Product (shown first)
+                      <Star className="w-4 h-4 inline mr-1 text-amber-500" /> Featured Product
                     </label>
                   </div>
+                </div>
+
+                {/* Info about other country */}
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
+                  💡 Switch to {formCountry === "usa" ? "🇮🇳 India" : "🇺🇸 USA"} tab to add {formCountry === "usa" ? "INR price and Amazon India" : "USD price and Amazon USA"} link for this product. You can add both country details by switching tabs before saving.
                 </div>
 
                 <div className="flex gap-3 mt-4 pt-4 border-t">
