@@ -258,13 +258,6 @@ export default function Navbar() {
                 </button>
               )}
             </div>
-
-            <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">
-              Sign In
-            </Link>
-            <Link href="/signup" className="btn-primary text-sm py-2 px-4">
-              Get Started
-            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -317,10 +310,7 @@ export default function Navbar() {
               ))}
             </div>
           ))}
-          <div className="pt-3 border-t border-gray-100 flex gap-3">
-            <Link href="/login" className="flex-1 btn-outline text-sm py-2 text-center justify-center">Sign In</Link>
-            <Link href="/signup" className="flex-1 btn-primary text-sm py-2 text-center justify-center">Get Started</Link>
-          </div>
+          
         </div>
       )}
     </header>
