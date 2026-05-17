@@ -243,13 +243,7 @@ export default function ShopPage() {
 
                   {/* Buy Button */}
                   {link ? (
-                    
-                      href={link}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
-                      style={{backgroundColor: '#FF9900'}}
-                    >
+                    <a href={link} target="_blank" rel="noopener noreferrer nofollow" className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90" style={{backgroundColor: '#FF9900'}}>
                       Buy on Amazon <ExternalLink className="w-4 h-4" />
                     </a>
                   ) : (
