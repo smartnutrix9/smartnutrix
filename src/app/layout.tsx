@@ -55,6 +55,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2GPD5QPM91"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-2GPD5QPM91');
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-white">
         <Navbar />
         <main className="flex-1">{children}</main>
