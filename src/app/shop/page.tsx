@@ -33,13 +33,30 @@ export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<ShopCategory[]>([]);
   const [country, setCountry] = useState<"usa" | "india">("usa");
+  const [countryDetected, setCountryDetected] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
     fetchShop();
+    detectCountry();
   }, []);
+
+  async function detectCountry() {
+    try {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      if (data.country_code === "IN") {
+        setCountry("india");
+      } else {
+        setCountry("usa");
+      }
+      setCountryDetected(true);
+    } catch {
+      setCountryDetected(true);
+    }
+  }
 
   async function fetchShop() {
     try {
@@ -49,7 +66,8 @@ export default function ShopPage() {
         setEnabled(data.enabled);
         setProducts(data.products || []);
         setCategories(data.categories || []);
-        if (data.settings?.shop_default_country) {
+        // Only use admin default if geo-detection hasn't set it yet
+        if (!countryDetected && data.settings?.shop_default_country) {
           setCountry(data.settings.shop_default_country as "usa" | "india");
         }
       }
@@ -131,7 +149,7 @@ export default function ShopPage() {
       </div>
 
       {/* Country Toggle */}
-      <div className="flex justify-center mb-8">
+      <div className="flex flex-col items-center mb-8">
         <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
           <button
             onClick={() => setCountry("usa")}
@@ -146,6 +164,11 @@ export default function ShopPage() {
             🇮🇳 India
           </button>
         </div>
+        {countryDetected && (
+          <p className="text-xs text-gray-400 mt-2">
+            📍 Auto-detected: {country === "india" ? "India" : "United States"} — switch anytime
+          </p>
+        )}
       </div>
 
       {/* Category Filter */}
