@@ -37,7 +37,7 @@ async function fetchWithRetry(url: string, options: any, retries = 3): Promise<a
       console.error(`USDA API attempt ${attempt}/${retries} failed:`, error.message);
       if (attempt === retries) throw error;
       // Wait before retrying (500ms, 1000ms, 1500ms)
-      await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+      await new Promise(resolve => setTimeout(resolve, attempt * 2000));
     }
   }
 }
