@@ -59,7 +59,6 @@ useEffect(() => {
 
       // Step 2: Determine country based on mode
       const countryMode = shopSettings.shop_country_mode || "auto";
-      const countryMode = shopSettings.shop_country_mode || "auto";
       setShopMode(countryMode as "auto" | "manual");
 
       if (countryMode === "auto") {
