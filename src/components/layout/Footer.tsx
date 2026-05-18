@@ -18,6 +18,7 @@ const footerLinks = {
     { label: "Protein Intake",    href: "/calculator/protein" },
   ],
   "Company": [
+    { label: "About Us",          href: "/about" },
     { label: "Blog",              href: "/blog" },
     { label: "Contact Us",        href: "/contact" },
     { label: "Privacy Policy",    href: "/privacy" },

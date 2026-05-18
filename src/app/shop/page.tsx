@@ -34,7 +34,7 @@ export default function ShopPage() {
   const [categories, setCategories] = useState<ShopCategory[]>([]);
   const [country, setCountry] = useState<"usa" | "india">("usa");
   const [countryDetected, setCountryDetected] = useState(false);
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [shopMode, setShopMode] = useState<"auto" | "manual">("auto");
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [enabled, setEnabled] = useState(true);
@@ -59,6 +59,8 @@ useEffect(() => {
 
       // Step 2: Determine country based on mode
       const countryMode = shopSettings.shop_country_mode || "auto";
+      const countryMode = shopSettings.shop_country_mode || "auto";
+      setShopMode(countryMode as "auto" | "manual");
 
       if (countryMode === "auto") {
         // Auto detect user's country
@@ -165,28 +167,32 @@ useEffect(() => {
         <p className="text-gray-500">Recommended nutrition supplements, kitchen tools, and health essentials</p>
       </div>
 
-      {/* Country Toggle */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
-          <button
-            onClick={() => setCountry("usa")}
-            className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${country === "usa" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
-          >
-            🇺🇸 USA
-          </button>
-          <button
-            onClick={() => setCountry("india")}
-            className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${country === "india" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
-          >
-            🇮🇳 India
-          </button>
+      {/* Country Toggle - Only show in Manual mode */}
+      {shopMode === "manual" ? (
+        <div className="flex flex-col items-center mb-8">
+          <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+            <button
+              onClick={() => setCountry("usa")}
+              className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${country === "usa" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
+            >
+              🇺🇸 USA
+            </button>
+            <button
+              onClick={() => setCountry("india")}
+              className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${country === "india" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
+            >
+              🇮🇳 India
+            </button>
+          </div>
         </div>
-        {countryDetected && (
-          <p className="text-xs text-gray-400 mt-2">
-            📍 Auto-detected: {country === "india" ? "India" : "United States"} — switch anytime
-          </p>
-        )}
-      </div>
+      ) : (
+        <div className="flex justify-center mb-8">
+          <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full">
+            <span className="text-sm text-gray-500">📍 Showing products for</span>
+            <span className="text-sm font-medium text-gray-900">{country === "india" ? "🇮🇳 India" : "🇺🇸 United States"}</span>
+          </div>
+        </div>
+      )}
 
       {/* Category Filter */}
       <div className="flex flex-wrap gap-2 justify-center mb-8">
