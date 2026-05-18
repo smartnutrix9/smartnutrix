@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from("site_settings")
       .select("*")
-      .in("key", ["shop_enabled", "shop_default_country", "shop_amazon_tag_usa", "shop_amazon_tag_india"]);
+      .in("key", ["shop_enabled", "shop_default_country", "shop_country_mode", "shop_amazon_tag_usa", "shop_amazon_tag_india"]);
 
     if (error) throw error;
 

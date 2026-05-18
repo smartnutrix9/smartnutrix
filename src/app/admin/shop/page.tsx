@@ -31,6 +31,7 @@ interface Product {
 interface ShopSettings {
   shop_enabled: string;
   shop_default_country: string;
+  shop_country_mode: string;
   shop_amazon_tag_usa: string;
   shop_amazon_tag_india: string;
 }
@@ -40,9 +41,11 @@ export default function AdminShopPage() {
   const [settings, setSettings] = useState<ShopSettings>({
     shop_enabled: "true",
     shop_default_country: "usa",
+    shop_country_mode: "auto",
     shop_amazon_tag_usa: "",
     shop_amazon_tag_india: "",
   });
+
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "settings">("products");
@@ -269,26 +272,66 @@ export default function AdminShopPage() {
               </button>
             </div>
 
-            {/* Default Country */}
-            <div className="card flex items-center justify-between">
-              <div>
-                <div className="font-medium text-gray-900">Default Country</div>
-                <div className="text-sm text-gray-500">Which shop page shows first</div>
+            {/* Country Detection Mode */}
+            <div className="card space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-gray-900">Country Detection</div>
+                  <div className="text-sm text-gray-500">How to determine which shop to show</div>
+                </div>
+                <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+                  <button
+                    onClick={() => updateSetting("shop_country_mode", "auto")}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${settings.shop_country_mode === "auto" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
+                  >
+                    🌍 Auto Detect
+                  </button>
+                  <button
+                    onClick={() => updateSetting("shop_country_mode", "manual")}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${settings.shop_country_mode === "manual" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
+                  >
+                    ✋ Manual
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
-                <button
-                  onClick={() => updateSetting("shop_default_country", "usa")}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${settings.shop_default_country === "usa" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
-                >
-                  🇺🇸 USA
-                </button>
-                <button
-                  onClick={() => updateSetting("shop_default_country", "india")}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${settings.shop_default_country === "india" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
-                >
-                  🇮🇳 India
-                </button>
-              </div>
+
+              {/* Auto Detect Info */}
+              {settings.shop_country_mode === "auto" && (
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="text-sm text-green-800">
+                    <strong>✅ Auto Detect is ON</strong> — The shop will automatically detect the user's country based on their location and show the appropriate products and prices.
+                  </div>
+                  <div className="text-xs text-green-600 mt-1">
+                    Users can still switch countries manually using the toggle on the shop page.
+                  </div>
+                </div>
+              )}
+
+              {/* Manual Country Selection */}
+              {settings.shop_country_mode === "manual" && (
+                <div>
+                  <div className="text-sm text-gray-600 mb-2">Select default country for all users:</div>
+                  <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit">
+                    <button
+                      onClick={() => updateSetting("shop_default_country", "usa")}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${settings.shop_default_country === "usa" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
+                    >
+                      🇺🇸 USA
+                    </button>
+                    <button
+                      onClick={() => updateSetting("shop_default_country", "india")}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${settings.shop_default_country === "india" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
+                    >
+                      🇮🇳 India
+                    </button>
+                  </div>
+                  <div className="p-3 bg-amber-50 rounded-lg mt-2">
+                    <div className="text-sm text-amber-800">
+                      <strong>✋ Manual Mode</strong> — All users will see the {settings.shop_default_country === "usa" ? "🇺🇸 USA" : "🇮🇳 India"} shop by default regardless of their location.
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Amazon Tags */}

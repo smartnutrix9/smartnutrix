@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const { data: settingsData } = await supabaseAdmin
       .from("site_settings")
       .select("*")
-      .in("key", ["shop_enabled", "shop_default_country"]);
+      .in("key", ["shop_enabled", "shop_default_country", "shop_country_mode"]);
 
     const settings: any = {};
     settingsData?.forEach((item: any) => { settings[item.key] = item.value; });

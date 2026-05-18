@@ -41,24 +41,9 @@ export default function ShopPage() {
 
 useEffect(() => {
     async function init() {
-      // Step 1: Detect user's country first
-      let detected = false;
-      try {
-        const geoRes = await fetch("https://ipapi.co/json/");
-        const geoData = await geoRes.json();
-        if (geoData.country_code === "IN") {
-          setCountry("india");
-        } else {
-          setCountry("usa");
-        }
-        detected = true;
-        setCountryDetected(true);
-      } catch {
-        // Geo-detection failed, will fall back to admin setting
-        setCountryDetected(false);
-      }
+      let shopSettings: any = {};
 
-      // Step 2: Fetch shop data
+      // Step 1: Fetch shop data and settings
       try {
         const res = await fetch("/api/shop");
         const data = await res.json();
@@ -66,17 +51,42 @@ useEffect(() => {
           setEnabled(data.enabled);
           setProducts(data.products || []);
           setCategories(data.categories || []);
-
-          // Only use admin default country if geo-detection failed
-          if (!detected && data.settings?.shop_default_country) {
-            setCountry(data.settings.shop_default_country as "usa" | "india");
-          }
+          shopSettings = data.settings || {};
         }
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
       }
+
+      // Step 2: Determine country based on mode
+      const countryMode = shopSettings.shop_country_mode || "auto";
+
+      if (countryMode === "auto") {
+        // Auto detect user's country
+        try {
+          const geoRes = await fetch("https://ipapi.co/json/");
+          const geoData = await geoRes.json();
+          if (geoData.country_code === "IN") {
+            setCountry("india");
+          } else {
+            setCountry("usa");
+          }
+          setCountryDetected(true);
+        } catch {
+          // Geo failed — use admin default as fallback
+          if (shopSettings.shop_default_country) {
+            setCountry(shopSettings.shop_default_country as "usa" | "india");
+          }
+          setCountryDetected(false);
+        }
+      } else {
+        // Manual mode — use admin setting
+        if (shopSettings.shop_default_country) {
+          setCountry(shopSettings.shop_default_country as "usa" | "india");
+        }
+        setCountryDetected(false);
+      }
+
+      setLoading(false);
     }
 
     init();
