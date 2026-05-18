@@ -34,46 +34,53 @@ export default function ShopPage() {
   const [categories, setCategories] = useState<ShopCategory[]>([]);
   const [country, setCountry] = useState<"usa" | "india">("usa");
   const [countryDetected, setCountryDetected] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [enabled, setEnabled] = useState(true);
 
-  useEffect(() => {
-    fetchShop();
-    detectCountry();
-  }, []);
-
-  async function detectCountry() {
-    try {
-      const res = await fetch("https://ipapi.co/json/");
-      const data = await res.json();
-      if (data.country_code === "IN") {
-        setCountry("india");
-      } else {
-        setCountry("usa");
-      }
-      setCountryDetected(true);
-    } catch {
-      setCountryDetected(true);
-    }
-  }
-
-  async function fetchShop() {
-    try {
-      const res = await fetch("/api/shop");
-      const data = await res.json();
-      if (data.success) {
-        setEnabled(data.enabled);
-        setProducts(data.products || []);
-        setCategories(data.categories || []);
-        // Only use admin default if geo-detection hasn't set it yet
-        if (!countryDetected && data.settings?.shop_default_country) {
-          setCountry(data.settings.shop_default_country as "usa" | "india");
+useEffect(() => {
+    async function init() {
+      // Step 1: Detect user's country first
+      let detected = false;
+      try {
+        const geoRes = await fetch("https://ipapi.co/json/");
+        const geoData = await geoRes.json();
+        if (geoData.country_code === "IN") {
+          setCountry("india");
+        } else {
+          setCountry("usa");
         }
+        detected = true;
+        setCountryDetected(true);
+      } catch {
+        // Geo-detection failed, will fall back to admin setting
+        setCountryDetected(false);
       }
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  }
+
+      // Step 2: Fetch shop data
+      try {
+        const res = await fetch("/api/shop");
+        const data = await res.json();
+        if (data.success) {
+          setEnabled(data.enabled);
+          setProducts(data.products || []);
+          setCategories(data.categories || []);
+
+          // Only use admin default country if geo-detection failed
+          if (!detected && data.settings?.shop_default_country) {
+            setCountry(data.settings.shop_default_country as "usa" | "india");
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    init();
+  }, []);
 
   async function filterByCategory(categoryName: string) {
     setActiveCategory(categoryName);
