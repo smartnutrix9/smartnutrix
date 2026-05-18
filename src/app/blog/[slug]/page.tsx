@@ -71,6 +71,27 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
     );
   }
 
+  // Content protection
+useEffect(() => {
+  // Disable right-click
+  const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+  
+  // Disable Ctrl+U (view source) and Ctrl+S (save page)
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 's')) {
+      e.preventDefault();
+    }
+  };
+
+  document.addEventListener('contextmenu', handleContextMenu);
+  document.addEventListener('keydown', handleKeyDown);
+
+  return () => {
+    document.removeEventListener('contextmenu', handleContextMenu);
+    document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       {/* Breadcrumb */}
@@ -130,6 +151,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
       {/* Article Content */}
 <article
   className="blog-content mb-12"
+  style={{ userSelect: 'none' }}
   dangerouslySetInnerHTML={{ __html: post.content }}
 />
 
