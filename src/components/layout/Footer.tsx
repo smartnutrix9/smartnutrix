@@ -20,6 +20,7 @@ const footerLinks = {
   "Company": [
     { label: "About Us",          href: "/about" },
     { label: "Blog",              href: "/blog" },
+    { label: "Shop",              href: "/shop" },
     { label: "Contact Us",        href: "/contact" },
     { label: "Privacy Policy",    href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms" },
@@ -32,9 +33,7 @@ export default function Footer() {
   useEffect(() => {
     fetch("/api/blog/latest")
       .then((r) => r.json())
-      .then((data) => {
-        if (data.success) setRecentPosts(data.posts);
-      })
+      .then((data) => { if (data.success) setRecentPosts(data.posts); })
       .catch(() => {});
   }, []);
 
@@ -48,28 +47,24 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900 mb-3">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{backgroundColor: '#1D9E75'}}>
-                <Leaf className="w-4 h-4" style={{color: 'white'}} />
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#1D9E75" }}>
+                <Leaf className="w-4 h-4" style={{ color: "white" }} />
               </div>
-              <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
+              <span>Smart<span style={{ color: "#0F6E56" }}>Nutrix</span></span>
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed">
               Your smart companion for food nutrition, calorie tracking, and healthy living.
             </p>
           </div>
 
-          {/* Static Links */}
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">{category}</h3>
-              <ul className="space-y-2">
+          {/* Links */}
+          {Object.entries(footerLinks).map(([section, links]) => (
+            <div key={section}>
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">{section}</h3>
+              <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                      style={{ ["--tw-text-opacity" as any]: 1 }}
-                    >
+                    <Link href={link.href} className="text-sm text-gray-500 hover:text-brand-600 transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -80,34 +75,29 @@ export default function Footer() {
 
           {/* Recent Posts */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Recent Posts</h3>
-            <ul className="space-y-2">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent Posts</h3>
+            <ul className="space-y-2.5">
               {recentPosts.length > 0 ? (
                 recentPosts.map((post: any) => (
-                  <li key={post.slug}>
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors line-clamp-1"
-                    >
+                  <li key={post.id}>
+                    <Link href={`/blog/${post.slug}`} className="text-sm text-gray-500 hover:text-brand-600 transition-colors line-clamp-2">
                       {post.title}
                     </Link>
                   </li>
                 ))
               ) : (
-                <>
-                  <li><Link href="/blog" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">View All Articles</Link></li>
-                </>
+                <li><Link href="/blog" className="text-sm text-gray-500 hover:text-brand-600">View all articles</Link></li>
               )}
             </ul>
           </div>
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-gray-200 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-400">
+        <div className="border-t border-gray-200 pt-8">
+          <p className="text-sm text-gray-400 text-center">
             © {new Date().getFullYear()} SmartNutrix. All rights reserved.
           </p>
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-gray-400 text-center mt-1">
             Nutrition data sourced from USDA FoodData Central. For informational purposes only.
           </p>
         </div>
