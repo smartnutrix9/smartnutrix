@@ -1,6 +1,5 @@
 "use client";
 // src/app/blog/[slug]/page.tsx
-// Individual blog post page
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
@@ -27,6 +26,23 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Content protection
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 's')) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Fetch post
   useEffect(() => {
     fetch(`/api/blog/${slug}`)
       .then((r) => r.json())
@@ -53,7 +69,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
     return (
       <div className="flex items-center justify-center py-32 gap-3 text-gray-400">
         <Loader2 className="w-6 h-6 animate-spin" />
-        Loading SmartNutrix article...
+        Loading article...
       </div>
     );
   }
@@ -62,121 +78,81 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
         <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">{error || "Article not found"}</h2>
-        <p className="text-gray-400 mb-6">This article may have been removed or the link is incorrect.</p>
-        <Link href="/blog" className="btn-primary">
-          View All Articles
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Article Not Found</h1>
+        <p className="text-gray-500 mb-6">The article you're looking for doesn't exist or has been removed.</p>
+        <Link href="/blog" className="btn-primary inline-flex items-center gap-2">
+          <ArrowLeft className="w-4 h-4" /> Back to Blog
         </Link>
       </div>
     );
   }
 
-  // Content protection
-useEffect(() => {
-  // Disable right-click
-  const handleContextMenu = (e: MouseEvent) => e.preventDefault();
-  
-  // Disable Ctrl+U (view source) and Ctrl+S (save page)
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 's')) {
-      e.preventDefault();
-    }
-  };
-
-  document.addEventListener('contextmenu', handleContextMenu);
-  document.addEventListener('keydown', handleKeyDown);
-
-  return () => {
-    document.removeEventListener('contextmenu', handleContextMenu);
-    document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-8">
-        <Link href="/" className="hover:text-gray-600">Home</Link>
-        <span>›</span>
-        <Link href="/blog" className="hover:text-gray-600">Blog</Link>
-        <span>›</span>
-        <span className="text-gray-600 truncate">{post.title}</span>
-      </div>
+      {/* Back link */}
+      <Link href="/blog" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-600 mb-6 transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back to Blog
+      </Link>
 
-      {/* Category Badge */}
+      {/* Category */}
       {post.blog_categories && (
-        <span
-          className="text-xs font-medium px-3 py-1 rounded-full"
-          style={{
-            backgroundColor: post.blog_categories.color + '15',
-            color: post.blog_categories.color,
-          }}
-        >
-          {post.blog_categories.name}
-        </span>
+        <div className="mb-4">
+          <span
+            className="text-xs font-semibold px-3 py-1 rounded-full text-white"
+            style={{ backgroundColor: post.blog_categories.color || '#1D9E75' }}
+          >
+            {post.blog_categories.name}
+          </span>
+        </div>
       )}
 
       {/* Title */}
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-4 leading-tight">
+      <h1 className="text-3xl font-bold text-gray-900 mb-4 leading-tight">
         {post.title}
       </h1>
 
-      {/* Meta info */}
-      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400 mb-8">
-        <span className="flex items-center gap-1">
-          <Calendar className="w-4 h-4" />
-          {formatDate(post.published_at)}
-        </span>
-        <span className="flex items-center gap-1">
+      {/* Meta */}
+      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-6 pb-6 border-b border-gray-100">
+        {post.published_at && (
+          <span className="flex items-center gap-1.5">
+            <Calendar className="w-4 h-4" />
+            {formatDate(post.published_at)}
+          </span>
+        )}
+        <span className="flex items-center gap-1.5">
           <Clock className="w-4 h-4" />
           {post.read_time} min read
         </span>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1.5">
           <Eye className="w-4 h-4" />
-          {post.views} views
+          {post.views.toLocaleString()} views
         </span>
       </div>
 
       {/* Cover Image */}
       {post.cover_image && (
-        <div className="rounded-2xl overflow-hidden mb-10 border border-gray-100">
+        <div className="mb-8 rounded-2xl overflow-hidden">
           <img
             src={post.cover_image}
             alt={post.title}
-            className="w-full h-64 md:h-96 object-cover"
+            className="w-full h-64 object-cover"
           />
         </div>
       )}
 
-      {/* Article Content */}
-<article
-  className="blog-content mb-12"
-  style={{ userSelect: 'none' }}
-  dangerouslySetInnerHTML={{ __html: post.content }}
-/>
+      {/* Article content */}
+      <article
+        className="blog-content mb-12"
+        style={{ userSelect: 'none' }}
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
 
-      {/* Bottom navigation */}
-      <div className="border-t border-gray-100 pt-8 mt-12">
-        <div className="flex items-center justify-between">
-          <Link href="/blog" className="flex items-center gap-2 text-gray-500 hover:text-gray-700">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Blog
-          </Link>
-          <div className="flex gap-2">
-            <Link href="/" className="btn-outline text-sm py-2 px-4">
-              Search Foods
-            </Link>
-            <Link href="/calculator/calories" className="btn-primary text-sm py-2 px-4">
-              Calorie Calculator
-            </Link>
-          </div>
-        </div>
+      {/* Footer */}
+      <div className="border-t border-gray-100 pt-8">
+        <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to all articles
+        </Link>
       </div>
-
-      {/* Disclaimer */}
-      <p className="text-xs text-gray-400 text-center mt-8">
-        This article is for informational purposes only and is not a substitute for professional medical advice.
-      </p>
     </div>
   );
 }
