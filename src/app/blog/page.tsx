@@ -34,17 +34,15 @@ export default function BlogPage() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    Promise.all([fetchPosts(), fetchCategories()]);
+    fetchPosts();
   }, []);
 
-  // Filter whenever search or category changes
+  // Re-filter whenever search or category changes
   useEffect(() => {
     let result = posts;
 
     if (activeCategory !== "all") {
-      result = result.filter(
-        (p) => p.blog_categories?.slug === activeCategory
-      );
+      result = result.filter((p) => p.blog_categories?.slug === activeCategory);
     }
 
     if (searchQuery.trim()) {
@@ -61,23 +59,37 @@ export default function BlogPage() {
   }, [posts, searchQuery, activeCategory]);
 
   async function fetchPosts() {
+    setLoading(true);
     try {
-      const res = await fetch("/api/blog/all");
+      // Use the existing /api/blog endpoint that already exists in the project
+      const res = await fetch("/api/blog");
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.posts) {
         setPosts(data.posts);
         setFiltered(data.posts);
-      }
-    } catch {}
-    setLoading(false);
-  }
 
-  async function fetchCategories() {
-    try {
-      const res = await fetch("/api/blog/categories");
-      const data = await res.json();
-      if (data.success) setCategories(data.categories);
-    } catch {}
+        // Extract unique categories from the posts
+        const seen = new Set<string>();
+        const cats: Category[] = [];
+        for (const post of data.posts) {
+          if (post.blog_categories && !seen.has(post.blog_categories.slug)) {
+            seen.add(post.blog_categories.slug);
+            cats.push({
+              id: post.blog_categories.slug,
+              name: post.blog_categories.name,
+              slug: post.blog_categories.slug,
+              color: post.blog_categories.color,
+            });
+          }
+        }
+        // Sort categories alphabetically
+        cats.sort((a, b) => a.name.localeCompare(b.name));
+        setCategories(cats);
+      }
+    } catch (err) {
+      console.error("Failed to fetch posts:", err);
+    }
+    setLoading(false);
   }
 
   function formatDate(dateStr: string) {
@@ -86,13 +98,13 @@ export default function BlogPage() {
     });
   }
 
-  function clearSearch() {
+  function clearAll() {
     setSearchQuery("");
+    setActiveCategory("all");
     searchRef.current?.focus();
   }
 
-  const showingCount = filtered.length;
-  const totalCount = activeCategory === "all" && !searchQuery.trim() ? posts.length : filtered.length;
+  const isFiltered = searchQuery.trim() !== "" || activeCategory !== "all";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -118,17 +130,14 @@ export default function BlogPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search articles... e.g. 'protein', 'diabetes', 'weight loss'"
-              className="w-full pl-14 pr-12 py-4 text-base border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-brand-500 bg-white shadow-sm transition-colors placeholder-gray-300"
-              style={{ "--tw-border-opacity": 1 } as any}
-              onFocus={(e) => (e.target.style.borderColor = "#1D9E75")}
-              onBlur={(e) => {
-                if (!searchQuery) e.target.style.borderColor = "#E5E7EB";
+              className="w-full pl-14 pr-12 py-4 text-base border-2 rounded-2xl focus:outline-none bg-white shadow-sm transition-colors placeholder-gray-300"
+              style={{
+                borderColor: searchQuery ? "#1D9E75" : "#E5E7EB",
               }}
-              autoFocus
             />
             {searchQuery && (
               <button
-                onClick={clearSearch}
+                onClick={() => setSearchQuery("")}
                 className="absolute inset-y-0 right-0 pr-5 flex items-center text-gray-400 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
@@ -136,8 +145,8 @@ export default function BlogPage() {
             )}
           </div>
 
-          {/* Search result count */}
-          {searchQuery && (
+          {/* Search result feedback */}
+          {searchQuery && !loading && (
             <p className="mt-3 text-sm text-gray-500">
               {filtered.length === 0
                 ? `No articles found for "${searchQuery}"`
@@ -154,16 +163,17 @@ export default function BlogPage() {
           <div className="flex flex-wrap gap-2 mb-8">
             <button
               onClick={() => setActiveCategory("all")}
-              className="px-4 py-2 rounded-full text-sm font-medium transition-all"
+              className="px-4 py-2 rounded-full text-sm font-medium transition-all border"
               style={
                 activeCategory === "all"
-                  ? { backgroundColor: "#1D9E75", color: "white" }
-                  : { backgroundColor: "white", color: "#6B7280", border: "1px solid #E5E7EB" }
+                  ? { backgroundColor: "#1D9E75", color: "white", borderColor: "#1D9E75" }
+                  : { backgroundColor: "white", color: "#6B7280", borderColor: "#E5E7EB" }
               }
             >
               All Articles
-              <span className="ml-1.5 text-xs opacity-75">({posts.length})</span>
+              <span className="ml-1.5 text-xs opacity-70">({posts.length})</span>
             </button>
+
             {categories.map((cat) => {
               const count = posts.filter(
                 (p) => p.blog_categories?.slug === cat.slug
@@ -171,28 +181,28 @@ export default function BlogPage() {
               if (count === 0) return null;
               return (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   onClick={() => setActiveCategory(cat.slug)}
-                  className="px-4 py-2 rounded-full text-sm font-medium transition-all"
+                  className="px-4 py-2 rounded-full text-sm font-medium transition-all border"
                   style={
                     activeCategory === cat.slug
-                      ? { backgroundColor: cat.color, color: "white" }
-                      : { backgroundColor: "white", color: "#6B7280", border: "1px solid #E5E7EB" }
+                      ? { backgroundColor: cat.color, color: "white", borderColor: cat.color }
+                      : { backgroundColor: "white", color: "#6B7280", borderColor: "#E5E7EB" }
                   }
                 >
                   {cat.name}
-                  <span className="ml-1.5 text-xs opacity-75">({count})</span>
+                  <span className="ml-1.5 text-xs opacity-70">({count})</span>
                 </button>
               );
             })}
           </div>
         )}
 
-        {/* ── Loading ── */}
+        {/* ── Loading state ── */}
         {loading && (
           <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
-            <Loader2 className="w-6 h-6 animate-spin" />
-            Loading SmartNutrix articles...
+            <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#1D9E75" }} />
+            <span>Loading SmartNutrix articles...</span>
           </div>
         )}
 
@@ -201,20 +211,18 @@ export default function BlogPage() {
           <div className="text-center py-20">
             <BookOpen className="w-12 h-12 text-gray-200 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              {searchQuery ? "No articles match your search" : "No articles yet"}
+              {searchQuery ? `No articles found for "${searchQuery}"` : "No articles yet"}
             </h3>
             <p className="text-gray-400 text-sm mb-6">
-              {searchQuery
-                ? `Try different keywords or browse all articles`
-                : "Check back soon for new content"}
+              {searchQuery ? "Try different keywords or browse all articles" : "Check back soon"}
             </p>
-            {searchQuery && (
+            {isFiltered && (
               <button
-                onClick={() => { setSearchQuery(""); setActiveCategory("all"); }}
+                onClick={clearAll}
                 className="px-5 py-2.5 rounded-xl text-sm font-medium text-white"
                 style={{ backgroundColor: "#1D9E75" }}
               >
-                Clear search
+                Show all articles
               </button>
             )}
           </div>
@@ -223,29 +231,30 @@ export default function BlogPage() {
         {/* ── Articles grid ── */}
         {!loading && filtered.length > 0 && (
           <>
-            {/* Result summary */}
+            {/* Result summary bar */}
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-gray-500">
-                {searchQuery || activeCategory !== "all"
+                {isFiltered
                   ? `Showing ${filtered.length} of ${posts.length} articles`
                   : `${posts.length} article${posts.length !== 1 ? "s" : ""}`}
               </p>
-              {(searchQuery || activeCategory !== "all") && (
+              {isFiltered && (
                 <button
-                  onClick={() => { setSearchQuery(""); setActiveCategory("all"); }}
-                  className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                  onClick={clearAll}
+                  className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
                 >
                   <X className="w-3.5 h-3.5" /> Clear filters
                 </button>
               )}
             </div>
 
+            {/* Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((post) => (
                 <Link
                   key={post.id}
                   href={`/blog/${post.slug}`}
-                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5"
+                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
                 >
                   {/* Cover image */}
                   <div className="relative h-48 bg-gray-100 overflow-hidden">
@@ -256,15 +265,17 @@ export default function BlogPage() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center"
-                           style={{ background: "linear-gradient(135deg, #E1F5EE, #B8E8D4)" }}>
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ background: "linear-gradient(135deg, #E1F5EE, #B8E8D4)" }}
+                      >
                         <BookOpen className="w-10 h-10" style={{ color: "#1D9E75" }} />
                       </div>
                     )}
                     {/* Category badge */}
                     {post.blog_categories && (
                       <span
-                        className="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full text-white"
+                        className="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full text-white shadow-sm"
                         style={{ backgroundColor: post.blog_categories.color || "#1D9E75" }}
                       >
                         {post.blog_categories.name}
@@ -272,7 +283,7 @@ export default function BlogPage() {
                     )}
                   </div>
 
-                  {/* Content */}
+                  {/* Text content */}
                   <div className="p-5">
                     <h2 className="font-bold text-gray-900 text-base leading-snug mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
                       {post.title}
@@ -292,7 +303,7 @@ export default function BlogPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Eye className="w-3 h-3" />
-                        {post.views.toLocaleString()}
+                        {post.views?.toLocaleString() ?? 0}
                       </span>
                     </div>
                   </div>
