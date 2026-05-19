@@ -1,0 +1,25 @@
+// src/app/api/blog/all/route.ts
+// Returns all published blog posts for the blog listing page
+
+import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
+
+export async function GET() {
+  try {
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 500 });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("blog_posts")
+      .select("id, title, slug, excerpt, cover_image, read_time, views, published_at, blog_categories(name, slug, color)")
+      .eq("published", true)
+      .order("published_at", { ascending: false });
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, posts: data || [] });
+  } catch (error: any) {
+    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
+  }
+}
