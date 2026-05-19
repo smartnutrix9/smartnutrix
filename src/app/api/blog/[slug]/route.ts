@@ -1,6 +1,4 @@
 // src/app/api/blog/[slug]/route.ts
-// Public API for fetching a single blog post by slug
-
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -9,14 +7,36 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 500 });
+    }
+
     const { slug } = await params;
 
-    const { data, error } = await supabaseAdmin
+    // Clean the slug — collapse multiple hyphens into one
+    // This fixes old broken URLs like "japanese-diet---secrets" → "japanese-diet-secrets"
+    const cleanSlug = slug.replace(/-{2,}/g, "-").replace(/^-|-$/g, "");
+
+    // Try clean slug first
+    let { data, error } = await supabaseAdmin
       .from("blog_posts")
       .select("*, blog_categories(name, slug, color)")
-      .eq("slug", slug)
+      .eq("slug", cleanSlug)
       .eq("published", true)
       .single();
+
+    // If not found with clean slug, try original slug as fallback
+    if (error || !data) {
+      const fallback = await supabaseAdmin
+        .from("blog_posts")
+        .select("*, blog_categories(name, slug, color)")
+        .eq("slug", slug)
+        .eq("published", true)
+        .single();
+
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error || !data) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
