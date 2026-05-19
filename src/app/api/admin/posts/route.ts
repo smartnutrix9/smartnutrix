@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const cleanContent = cleanNbsp(content);
     const cleanExcerpt = cleanNbsp(excerpt || "");
-    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-{2,}/g, "-").replace(/^-|-$/g, "");
     const wordCount = cleanContent.replace(/<[^>]*>/g, "").split(/\s+/).length;
     const readTime = Math.max(1, Math.ceil(wordCount / 200));
 
@@ -96,7 +96,7 @@ export async function PUT(request: NextRequest) {
 
     if (title !== undefined) {
       updateData.title = title;
-      updateData.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      updateData.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-{2,}/g, "-").replace(/^-|-$/g, "");
     }
     if (content !== undefined) {
       const cleanContent = cleanNbsp(content);
