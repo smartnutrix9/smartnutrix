@@ -2,10 +2,10 @@
 // src/app/ai/page.tsx
 // SmartNutrix AI Nutrition Assistant — 3 features: Chat, Food Analyser, Meal Planner
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Brain, Send, Loader2, MessageSquare, Search,
-  CalendarDays, RotateCcw, ChevronDown, Leaf,
+  CalendarDays, RotateCcw, Leaf,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ function incrementUsage(): number {
 // ── Render markdown-ish text to JSX ───────────────────────────────────
 function renderResponse(text: string) {
   const lines = text.split("\n");
-  const elements: JSX.Element[] = [];
+  const elements: React.ReactElement[] = [];  // ← Fixed: was JSX.Element[]
   let i = 0;
 
   while (i < lines.length) {
@@ -46,7 +46,7 @@ function renderResponse(text: string) {
           <table className="w-full text-sm border-collapse">
             <tbody>
               {tableLines.map((row, ri) => (
-                <tr key={ri} className={ri === 0 ? "bg-brand-50 font-semibold" : ri % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                <tr key={ri} className={ri === 0 ? "bg-green-50 font-semibold" : ri % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                   {row.split("|").filter((_, ci) => ci > 0 && ci < row.split("|").length - 1).map((cell, ci) => (
                     <td key={ci} className="border border-gray-200 px-3 py-1.5">{cell.trim()}</td>
                   ))}
@@ -59,10 +59,17 @@ function renderResponse(text: string) {
       continue;
     }
 
-    // H1/H2 bold headings
-    if (line.startsWith("## ") || line.startsWith("**") && line.endsWith("**")) {
-      const txt = line.replace(/^##\s*/, "").replace(/^\*\*/, "").replace(/\*\*$/, "");
+    // H2 headings
+    if (line.startsWith("## ")) {
+      const txt = line.replace(/^##\s*/, "");
       elements.push(<h3 key={`h-${i}`} className="font-bold text-gray-900 text-base mt-4 mb-1">{txt}</h3>);
+      i++; continue;
+    }
+
+    // Bold-only lines like **Heading**
+    if (line.match(/^\*\*[^*]+\*\*$/) && !line.startsWith("- ")) {
+      const txt = line.replace(/^\*\*/, "").replace(/\*\*$/, "");
+      elements.push(<h4 key={`bh-${i}`} className="font-semibold text-gray-800 mt-3 mb-1">{txt}</h4>);
       i++; continue;
     }
 
@@ -82,14 +89,18 @@ function renderResponse(text: string) {
       elements.push(
         <ul key={`ul-${i}`} className="list-disc list-inside space-y-1 my-2 text-gray-700">
           {bullets.map((b, bi) => (
-            <li key={bi} dangerouslySetInnerHTML={{ __html: b.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>") }} />
+            <li key={bi} dangerouslySetInnerHTML={{
+              __html: b
+                .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                .replace(/\*(.+?)\*/g, "<em>$1</em>")
+            }} />
           ))}
         </ul>
       );
       continue;
     }
 
-    // Italic headings like *Based on: ...*
+    // Italic line like *Based on: ...*
     if (line.startsWith("*") && line.endsWith("*") && !line.startsWith("**")) {
       elements.push(
         <p key={`it-${i}`} className="text-sm text-gray-500 italic my-1">{line.slice(1, -1)}</p>
@@ -97,16 +108,7 @@ function renderResponse(text: string) {
       i++; continue;
     }
 
-    // Emoji section headers like **🌅 Breakfast**
-    if (line.match(/^\*\*.+\*\*$/)) {
-      const txt = line.replace(/^\*\*/, "").replace(/\*\*$/, "");
-      elements.push(
-        <h4 key={`eh-${i}`} className="font-semibold text-gray-800 mt-3 mb-1">{txt}</h4>
-      );
-      i++; continue;
-    }
-
-    // Normal paragraph (with inline bold/italic)
+    // Normal paragraph with inline bold/italic
     if (line.trim()) {
       const html = line
         .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
@@ -152,7 +154,16 @@ const SUGGESTIONS = {
 };
 
 // ── Mode config ────────────────────────────────────────────────────────
-const MODES: { id: Mode; label: string; icon: any; color: string; placeholder: string; description: string }[] = [
+interface ModeConfig {
+  id: Mode;
+  label: string;
+  icon: React.ElementType;
+  color: string;
+  placeholder: string;
+  description: string;
+}
+
+const MODES: ModeConfig[] = [
   {
     id: "chat",
     label: "Nutrition Chat",
@@ -219,7 +230,6 @@ export default function AIPage() {
     setShowSuggestions(false);
     setInput("");
 
-    // Add user message to chat history immediately
     if (mode === "chat") {
       setChatHistory((prev) => [...prev, { role: "user", content: message }]);
     }
@@ -254,7 +264,7 @@ export default function AIPage() {
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");
       if (mode === "chat") {
-        setChatHistory((prev) => prev.slice(0, -1)); // remove optimistic user message
+        setChatHistory((prev) => prev.slice(0, -1));
       }
     }
     setLoading(false);
@@ -278,8 +288,8 @@ export default function AIPage() {
 
   const hasResult =
     (mode === "chat" && chatHistory.length > 0) ||
-    (mode === "analyser" && analyserResult) ||
-    (mode === "planner" && plannerResult);
+    (mode === "analyser" && analyserResult !== null) ||
+    (mode === "planner" && plannerResult !== null);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -295,10 +305,11 @@ export default function AIPage() {
           <p className="text-gray-500 text-sm max-w-md mx-auto">
             Powered by Claude AI — ask anything about food, nutrition, and healthy eating
           </p>
-          {/* Usage indicator */}
           <div className="inline-flex items-center gap-2 mt-3 px-4 py-1.5 rounded-full text-xs font-medium"
-               style={{ backgroundColor: remaining > 3 ? "#E1F5EE" : "#FEF3C7",
-                        color: remaining > 3 ? "#0F6E56" : "#92400E" }}>
+               style={{
+                 backgroundColor: remaining > 3 ? "#E1F5EE" : "#FEF3C7",
+                 color: remaining > 3 ? "#0F6E56" : "#92400E"
+               }}>
             <Leaf className="w-3 h-3" />
             {remaining > 0
               ? `${remaining} free question${remaining !== 1 ? "s" : ""} remaining today`
@@ -332,7 +343,6 @@ export default function AIPage() {
           {/* ── CHAT MODE ── */}
           {mode === "chat" && (
             <>
-              {/* Messages */}
               {chatHistory.length > 0 && (
                 <div className="p-4 space-y-4 max-h-[500px] overflow-y-auto">
                   {chatHistory.map((msg, i) => (
@@ -343,12 +353,14 @@ export default function AIPage() {
                           <Brain className="w-4 h-4 text-white" />
                         </div>
                       )}
-                      <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                        msg.role === "user"
-                          ? "text-white rounded-tr-sm"
-                          : "bg-gray-50 text-gray-800 rounded-tl-sm border border-gray-100"
-                      }`}
-                           style={msg.role === "user" ? { backgroundColor: "#1D9E75" } : {}}>
+                      <div
+                        className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                          msg.role === "user"
+                            ? "text-white rounded-tr-sm"
+                            : "bg-gray-50 text-gray-800 rounded-tl-sm border border-gray-100"
+                        }`}
+                        style={msg.role === "user" ? { backgroundColor: "#1D9E75" } : {}}
+                      >
                         {msg.role === "user"
                           ? <p className="text-sm">{msg.content}</p>
                           : renderResponse(msg.content)}
@@ -362,7 +374,7 @@ export default function AIPage() {
                         <Brain className="w-4 h-4 text-white" />
                       </div>
                       <div className="bg-gray-50 rounded-2xl rounded-tl-sm px-4 py-3 border border-gray-100">
-                        <div className="flex gap-1 items-center">
+                        <div className="flex gap-1 items-center h-5">
                           <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
                           <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
                           <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "300ms" }} />
@@ -374,14 +386,13 @@ export default function AIPage() {
                 </div>
               )}
 
-              {/* Suggestions */}
               {showSuggestions && chatHistory.length === 0 && (
                 <div className="p-5">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Try asking:</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {SUGGESTIONS.chat.map((s) => (
                       <button key={s} onClick={() => handleSubmit(s)}
-                              className="text-left text-sm px-4 py-2.5 rounded-xl border border-gray-100 hover:border-brand-200 hover:bg-brand-50 text-gray-600 transition-colors">
+                              className="text-left text-sm px-4 py-2.5 rounded-xl border border-gray-100 hover:border-green-200 hover:bg-green-50 text-gray-600 transition-colors">
                         {s}
                       </button>
                     ))}
@@ -395,13 +406,8 @@ export default function AIPage() {
           {mode === "analyser" && (
             <div className="p-5">
               {analyserResult ? (
-                <div>
-                  <div className="mb-4 p-3 rounded-xl bg-blue-50 border border-blue-100 text-sm text-blue-700">
-                    <strong>Your meal:</strong> {input || "Described meal"}
-                  </div>
-                  {renderResponse(analyserResult.content)}
-                </div>
-              ) : !loading && (
+                <div>{renderResponse(analyserResult.content)}</div>
+              ) : !loading ? (
                 <>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Example meals to analyse:</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -413,7 +419,7 @@ export default function AIPage() {
                     ))}
                   </div>
                 </>
-              )}
+              ) : null}
               {loading && (
                 <div className="flex items-center justify-center py-12 gap-3 text-gray-400">
                   <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#3B82F6" }} />
@@ -428,7 +434,7 @@ export default function AIPage() {
             <div className="p-5">
               {plannerResult ? (
                 <div>{renderResponse(plannerResult.content)}</div>
-              ) : !loading && (
+              ) : !loading ? (
                 <>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Example goals:</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -440,7 +446,7 @@ export default function AIPage() {
                     ))}
                   </div>
                 </>
-              )}
+              ) : null}
               {loading && (
                 <div className="flex items-center justify-center py-12 gap-3 text-gray-400">
                   <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#8B5CF6" }} />
@@ -468,8 +474,7 @@ export default function AIPage() {
                 placeholder={currentMode.placeholder}
                 rows={2}
                 disabled={loading || remaining <= 0}
-                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-300 disabled:opacity-50"
-                style={{ "--tw-ring-color": currentMode.color } as any}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-300 disabled:opacity-50"
               />
               <div className="flex flex-col gap-2">
                 <button
@@ -478,7 +483,9 @@ export default function AIPage() {
                   className="w-11 h-11 rounded-xl flex items-center justify-center text-white disabled:opacity-40 transition-opacity hover:opacity-90"
                   style={{ backgroundColor: currentMode.color }}
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                  {loading
+                    ? <Loader2 className="w-5 h-5 animate-spin" />
+                    : <Send className="w-5 h-5" />}
                 </button>
                 {hasResult && (
                   <button onClick={resetMode} title="Start over"
