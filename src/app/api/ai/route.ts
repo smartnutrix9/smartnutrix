@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 
-// System prompts for each mode
 const SYSTEM_PROMPTS = {
   chat: `You are SmartNutrix AI — a friendly, knowledgeable nutrition assistant specialising in food science, dietetics, and healthy eating. You have deep knowledge of Indian foods, global cuisines, calories, macronutrients, micronutrients, dietary requirements for various health conditions, and evidence-based nutrition advice.
 
@@ -62,20 +61,20 @@ Always respond in this exact format:
 
 ---
 
-**🌅 Breakfast (~X cal)**
+**Breakfast (~X cal)**
 - [Specific meal with portions]
 - [Drink/side]
 
-**🥗 Mid-Morning Snack (~X cal)**
+**Mid-Morning Snack (~X cal)**
 - [Specific snack]
 
-**☀️ Lunch (~X cal)**
+**Lunch (~X cal)**
 - [Specific meal with portions]
 
-**🍎 Evening Snack (~X cal)**
+**Evening Snack (~X cal)**
 - [Specific snack]
 
-**🌙 Dinner (~X cal)**
+**Dinner (~X cal)**
 - [Specific meal with portions]
 
 ---
@@ -86,7 +85,7 @@ Calories: ~X kcal | Protein: ~Xg | Carbs: ~Xg | Fat: ~Xg
 **Tips for your goals:**
 - [2-3 practical tips specific to their situation]
 
-Prioritise Indian foods unless the user specifies otherwise. Offer practical, affordable, accessible meals — not exotic superfoods.`,
+Prioritise Indian foods unless the user specifies otherwise. Offer practical, affordable, accessible meals.`,
 };
 
 export async function POST(request: NextRequest) {
@@ -109,11 +108,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
     }
 
-    // Build messages array — include conversation history for chat mode
+    // Build messages array
     const messages: { role: "user" | "assistant"; content: string }[] = [];
 
     if (mode === "chat" && conversationHistory && Array.isArray(conversationHistory)) {
-      // Include up to last 10 exchanges for context
       const recent = conversationHistory.slice(-20);
       for (const msg of recent) {
         if (msg.role === "user" || msg.role === "assistant") {
@@ -124,6 +122,13 @@ export async function POST(request: NextRequest) {
 
     messages.push({ role: "user", content: message });
 
+    const requestBody = {
+      model: "claude-haiku-4-5-20251001",  // Fast + affordable model
+      max_tokens: 1024,
+      system: SYSTEM_PROMPTS[mode as keyof typeof SYSTEM_PROMPTS],
+      messages,
+    };
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -131,31 +136,29 @@ export async function POST(request: NextRequest) {
         "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
-        system: SYSTEM_PROMPTS[mode as keyof typeof SYSTEM_PROMPTS],
-        messages,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("Anthropic API error:", errorData);
+      console.error("Anthropic API error:", response.status, responseText);
+      // Return the actual error for debugging — we'll remove this after it works
       return NextResponse.json(
-        { error: "AI service temporarily unavailable. Please try again." },
+        { error: `API error ${response.status}: ${responseText.slice(0, 200)}` },
         { status: 502 }
       );
     }
 
-    const data = await response.json();
+    const data = JSON.parse(responseText);
     const aiResponse = data.content?.[0]?.text || "Sorry, I could not generate a response.";
 
     return NextResponse.json({ success: true, response: aiResponse });
+
   } catch (error: any) {
     console.error("AI route error:", error);
     return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
+      { error: `Server error: ${error.message}` },
       { status: 500 }
     );
   }
