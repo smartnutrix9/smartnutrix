@@ -403,7 +403,12 @@ export default function AIPage() {
               <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown} placeholder={currentMode.placeholder} rows={2}
                         disabled={loading || remaining <= 0}
-                        className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-300 disabled:opacity-50" />
+                        className="flex-1 px-4 py-3 rounded-xl text-sm resize-none focus:outline-none placeholder-gray-300 disabled:opacity-50"
+                        style={{
+                          border: "2px solid #1D9E75",
+                          outline: "none",
+                          boxShadow: "0 0 0 3px rgba(29,158,117,0.1)",
+                        }} />
               <div className="flex flex-col gap-2">
                 <button onClick={() => handleSubmit()} disabled={loading || !input.trim() || remaining <= 0}
                         className="w-11 h-11 rounded-xl flex items-center justify-center text-white disabled:opacity-40 hover:opacity-90"
