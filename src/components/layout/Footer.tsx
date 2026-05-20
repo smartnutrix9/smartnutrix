@@ -53,7 +53,7 @@ export default function Footer() {
               <span>Smart<span style={{ color: "#0F6E56" }}>Nutrix</span></span>
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Your smart companion for food nutrition, calorie tracking, and healthy living.
+              Your smart companion for food nutrition, calorie tracking, and healthy living. Trusted nutrition data for Indian and global foods, powered by USDA science.
             </p>
           </div>
 

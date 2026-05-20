@@ -113,7 +113,7 @@ export default function BlogPage() {
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-            SmartNutrix Blog
+            Smart<span style={{ color: "#0F6E56" }}>Nutrix</span> Blog
           </h1>
           <p className="text-gray-500 mb-8 text-base">
             Evidence-based nutrition, Indian food guides, health tips, and more

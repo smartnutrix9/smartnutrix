@@ -104,9 +104,9 @@ export default function Navbar() {
           <Link
             href="/"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-2 font-bold text-xl text-gray-900"
+            className="flex items-center gap-2 font-bold text-2xl text-gray-900"
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: '#1D9E75'}}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{backgroundColor: '#1D9E75'}}>
               <Leaf className="w-5 h-5" style={{color: 'white'}} />
             </div>
             <span>Smart<span style={{color: '#0F6E56'}}>Nutrix</span></span>
